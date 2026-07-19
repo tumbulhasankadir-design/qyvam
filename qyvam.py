@@ -75,22 +75,33 @@ def cocuk_adim_guncelle(cocuk_id, yeni_adim):
 
 def cocuk_sil(cocuk_id):
     import sqlite3
-    conn = sqlite3.connect('qyvam_veritabani.db')
+    # timeout=20 ekleyerek veritabanının "kilitli kalma" (locked) ihtimalini ortadan kaldırıyoruz
+    conn = sqlite3.connect('qyvam_veritabani.db', timeout=20)
     c = conn.cursor()
-    # 1. Çocuğu ana listeden sil
-    c.execute("DELETE FROM cocuklar WHERE id = ?", (cocuk_id,))
-    # 2. Çocuğun geçmiş işlemlerini/görevlerini temizle
-    c.execute("DELETE FROM islemler WHERE cocuk_id = ?", (cocuk_id,))
-    # 3. Çocuğun özel beratlarını temizle
-    c.execute('''CREATE TABLE IF NOT EXISTS ozel_beratlar 
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                  cocuk_id INTEGER, 
-                  berat_adi TEXT, 
-                  berat_aciklama TEXT)''')
-    c.execute("DELETE FROM ozel_beratlar WHERE cocuk_id = ?", (cocuk_id,))
     
-    conn.commit()
-    conn.close()
+    try:
+        # 1. Çocuğu ana listeden sil
+        # (Eğer sütun adı "id" değilse sistem çökmeyecek, hatayı bize fırlatacak)
+        c.execute("DELETE FROM cocuklar WHERE id = ?", (cocuk_id,))
+        
+        # 2. Çocuğun geçmiş işlemlerini temizle
+        c.execute("DELETE FROM islemler WHERE cocuk_id = ?", (cocuk_id,))
+        
+        # 3. Çocuğun özel beratlarını temizle
+        c.execute('''CREATE TABLE IF NOT EXISTS ozel_beratlar 
+                     (id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                      cocuk_id INTEGER, 
+                      berat_adi TEXT, 
+                      berat_aciklama TEXT)''')
+        c.execute("DELETE FROM ozel_beratlar WHERE cocuk_id = ?", (cocuk_id,))
+        
+        conn.commit()
+        return True, "Başarılı"
+    except Exception as e:
+        # Hata olursa sistemi çökertmek yerine hatanın detayını Veli Ekranına gönderiyoruz
+        return False, str(e)
+    finally:
+        conn.close()
     
 def ozel_beratlari_getir(cocuk_id):
     import sqlite3
