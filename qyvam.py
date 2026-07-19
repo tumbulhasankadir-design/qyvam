@@ -552,13 +552,13 @@ def veli_panel_ekrani():
         else:
             # 7 Farklı Tasarım Teması
             BERAT_TEMALARI = {
-                "1. Antik Parşömen (Tarihi/Klasik)": {"bg": "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)", "border": "#78350f", "text": "#451a03", "logo": "#92400e"},
-                "2. Siber Uzay (Fütüristik/Mavi)": {"bg": "linear-gradient(135deg, #eff6ff 0%, #bfdbfe 100%)", "border": "#1d4ed8", "text": "#1e3a8a", "logo": "#2563eb"},
-                "3. Kökler ve Doğa (Huzur/Yeşil)": {"bg": "linear-gradient(135deg, #f0fdf4 0%, #bbf7d0 100%)", "border": "#166534", "text": "#14532d", "logo": "#15803d"},
-                "4. Güneş Yıldızı (Enerji/Sarı)": {"bg": "linear-gradient(135deg, #fefce8 0%, #fef08a 100%)", "border": "#a16207", "text": "#713f12", "logo": "#ca8a04"},
-                "5. Derin Okyanus (Bilgelik/Lacivert)": {"bg": "linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%)", "border": "#334155", "text": "#0f172a", "logo": "#475569"},
-                "6. Neon Işıklar (Canlı/Pembe)": {"bg": "linear-gradient(135deg, #fdf2f8 0%, #fbcfe8 100%)", "border": "#be185d", "text": "#831843", "logo": "#db2777"},
-                "7. Zarif Minimal (Sade/Beyaz)": {"bg": "#ffffff", "border": "#cbd5e1", "text": "#334155", "logo": "#64748b"}
+                "1. Antik Parşömen (Tarihi/Klasik)": {"bg": "#fefce8", "border": "#92400e", "text": "#451a03"},
+                "2. Siber Uzay (Fütüristik/Mavi)": {"bg": "#eff6ff", "border": "#1e40af", "text": "#1e3a8a"},
+                "3. Kökler ve Doğa (Huzur/Yeşil)": {"bg": "#f0fdf4", "border": "#166534", "text": "#14532d"},
+                "4. Güneş Yıldızı (Enerji/Altın)": {"bg": "#fffbeb", "border": "#b45309", "text": "#78350f"},
+                "5. Derin Okyanus (Bilgelik/Lacivert)": {"bg": "#f8fafc", "border": "#334155", "text": "#0f172a"},
+                "6. Neon Işıklar (Canlı/Pembe)": {"bg": "#fdf2f8", "border": "#be185d", "text": "#831843"},
+                "7. Zarif Minimal (Sade/Siyah-Beyaz)": {"bg": "#ffffff", "border": "#475569", "text": "#1e293b"}
             }
 
             col_sol, col_sag = st.columns([1, 1])
@@ -569,12 +569,12 @@ def veli_panel_ekrani():
                 veli_isim = st.text_input("Anne/Baba Adı Soyadı:", placeholder="Örn: Ahmet Yılmaz")
                 faz_adi = st.selectbox("Hangi Faz İçin Veriliyor?", [
                     "KÖKLER FAZI", "BAĞLAR FAZI", "PUSULA FAZI", 
-                    "AYNALAR FAZI", "ÇARKLAR FAZI", "KÖPRÜLER FAZI", "KANATLAR FAZI", "ÖZEL BAŞARI"
+                    "AYNALAR FAZI", "ÇARKLAR FAZI", "KÖPRÜLER FAZI", "KANATLAR FAZI", "ÖZEL BAŞARI BERATI"
                 ])
                 secilen_tema = st.selectbox("Sertifika Tasarımı (7 Farklı Tema):", list(BERAT_TEMALARI.keys()))
                 
             with col_sag:
-                st.info("💡 **Nasıl Çıktı Alınır?**\nBeratınızı oluşturduktan sonra 'İndir' butonuna basarak bilgisayarınıza kaydedin. İnen dosyaya çift tıklayıp tarayıcıda açtıktan sonra klavyeden **Ctrl+P** tuşlarına basarak PDF olarak kaydedebilir veya renkli yazıcıdan çıkartabilirsiniz.")
+                st.info("💡 **Nasıl Çıktı Alınır?**\nBeratınızı oluşturduktan sonra 'İndir' butonuna basarak bilgisayarınıza kaydedin. İnen dosyaya çift tıklayıp tarayıcıda açtıktan sonra klavyeden **Ctrl+P** tuşlarına basarak A4 boyutunda (Yatay) PDF olarak kaydedebilir veya renkli yazıcıdan çıkartabilirsiniz.")
                 olustur_buton = st.button("🎨 Beratı Ekranda Çiz ve Oluştur")
 
             if olustur_buton:
@@ -583,107 +583,151 @@ def veli_panel_ekrani():
                 else:
                     tema = BERAT_TEMALARI[secilen_tema]
                     
-                    # Muazzam Görünümlü HTML CSS Sertifika Şablonu
+                    # Canva Referanslı Profesyonel CSS/HTML Sertifika Şablonu
                     html_icerik = f"""
                     <html>
                     <head>
                     <meta charset="utf-8">
+                    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel:wght@600;700&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
                     <style>
-                        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Great+Vibes&family=Montserrat:wght@400;600&display=swap');
-                        
-                        body {{ margin: 0; padding: 0; display: flex; justify-content: center; background: transparent; }}
-                        .sertifika-container {{
-                            width: 800px;
-                            height: 560px;
-                            padding: 40px;
+                        body {{
+                            margin: 0; padding: 0;
+                            display: flex; justify-content: center;
+                            background: transparent;
+                        }}
+                        .certificate {{
+                            width: 1000px;
+                            height: 707px; /* A4 Yatay Oranı */
                             background: {tema['bg']};
-                            border: 15px solid {tema['border']};
-                            border-radius: 10px;
-                            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+                            padding: 35px;
+                            box-sizing: border-box;
                             position: relative;
-                            text-align: center;
-                            font-family: 'Montserrat', sans-serif;
-                            color: {tema['text']};
+                        }}
+                        .border-outer {{
+                            width: 100%; height: 100%;
+                            border: 2px solid {tema['border']};
+                            padding: 8px;
                             box-sizing: border-box;
                         }}
-                        .sertifika-baslik {{
-                            font-family: 'Cinzel', serif;
-                            font-size: 38px;
-                            font-weight: 700;
-                            margin-bottom: 25px;
-                            text-transform: uppercase;
-                            letter-spacing: 2px;
-                            border-bottom: 2px solid {tema['border']};
-                            display: inline-block;
-                            padding-bottom: 10px;
+                        .border-inner {{
+                            width: 100%; height: 100%;
+                            border: 4px solid {tema['border']};
+                            padding: 50px 70px;
+                            box-sizing: border-box;
+                            position: relative;
+                            text-align: center;
                         }}
-                        .sertifika-metin {{
-                            font-size: 17px;
-                            line-height: 1.8;
-                            margin: 10px 40px;
+                        /* Klasik Köşe Süslemeleri (Canva benzeri) */
+                        .corner {{
+                            position: absolute; width: 15px; height: 15px;
+                            background: {tema['bg']};
+                            border: 3px solid {tema['border']};
+                            border-radius: 50%;
                         }}
-                        .sertifika-isim {{
-                            font-family: 'Great Vibes', cursive;
-                            font-size: 46px;
-                            color: {tema['border']};
-                            display: block;
-                            margin: 15px 0;
+                        .corner-tl {{ top: -10px; left: -10px; }}
+                        .corner-tr {{ top: -10px; right: -10px; }}
+                        .corner-bl {{ bottom: -10px; left: -10px; }}
+                        .corner-br {{ bottom: -10px; right: -10px; }}
+                        
+                        .header {{
+                            font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 500;
+                            color: {tema['text']}; text-transform: uppercase; letter-spacing: 2px;
+                            margin-bottom: 10px;
                         }}
-                        .sertifika-alt {{
-                            position: absolute;
-                            bottom: 40px;
-                            left: 50px;
-                            right: 50px;
-                            display: flex;
-                            justify-content: space-between;
-                            align-items: flex-end;
+                        .title {{
+                            font-family: 'Cinzel', serif; font-size: 52px; font-weight: 700;
+                            color: {tema['border']}; margin-bottom: 30px; letter-spacing: 1px;
                         }}
-                        .imza-alani {{
-                            text-align: left;
-                            font-size: 16px;
+                        .salutation {{
+                            font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 600;
+                            color: {tema['text']}; margin-bottom: 5px;
                         }}
-                        .imza-cizgi {{
-                            margin-top: 50px;
-                            border-top: 1px solid {tema['text']};
-                            width: 200px;
+                        .name {{
+                            font-family: 'Alex Brush', cursive; font-size: 85px;
+                            color: {tema['border']}; margin: 0 0 25px 0; line-height: 1.1;
                         }}
-                        .qyvam-logo {{
-                            text-align: right;
+                        .description {{
+                            font-family: 'Montserrat', sans-serif; font-size: 16px; line-height: 1.8;
+                            color: {tema['text']}; margin: 0 auto 40px auto; max-width: 85%;
                         }}
-                        .qyvam-logo-text {{
-                            font-family: 'Cinzel', serif;
-                            font-size: 32px;
-                            font-weight: 700;
-                            color: {tema['logo']};
-                            letter-spacing: 4px;
-                            margin-bottom: 5px;
+                        .footer {{
+                            display: flex; justify-content: space-between; align-items: flex-end;
+                            position: absolute; bottom: 50px; left: 70px; right: 70px;
                         }}
-                        .qyvam-logo-sub {{
-                            font-size: 11px;
-                            letter-spacing: 2px;
-                            opacity: 0.8;
-                            text-transform: uppercase;
-                            font-weight: 600;
+                        .signature-block, .qyvam-logo-block {{
+                            text-align: center; width: 220px; position: relative; z-index: 10;
                         }}
+                        .sign-name {{ font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 600; color: {tema['text']}; }}
+                        .sign-title {{ font-family: 'Montserrat', sans-serif; font-size: 13px; color: {tema['text']}; margin-bottom: 35px; }}
+                        .sign-line {{ border-top: 1px solid {tema['text']}; width: 100%; margin: 0 auto; }}
+                        
+                        /* Otomatik El Yazısı İmza Efekti */
+                        .auto-signature {{
+                            font-family: 'Alex Brush', cursive; font-size: 38px;
+                            color: {tema['border']}; opacity: 0.8;
+                            position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%) rotate(-5deg);
+                        }}
+                        
+                        /* Ortadaki Rozet / Mühür */
+                        .seal {{
+                            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+                            opacity: 0.15; width: 140px; z-index: 1;
+                        }}
+                        
+                        /* Qyvam Amblemi */
+                        .qyvam-brand {{ font-family: 'Cinzel', serif; font-size: 26px; font-weight: 700; color: {tema['border']}; letter-spacing: 3px; margin-top: 25px; margin-bottom: 5px; }}
+                        .qyvam-sub {{ font-family: 'Montserrat', sans-serif; font-size: 10px; letter-spacing: 1px; color: {tema['text']}; text-transform: uppercase; }}
                     </style>
                     </head>
                     <body>
-                        <div class="sertifika-container">
-                            <div class="sertifika-baslik">{faz_adi}</div>
-                            <div class="sertifika-metin">
-                                Bu bir sertifikadan daha fazlası; birlikte geçirdiğimiz harika anların bir hatırası!<br>
-                                Sevgili oğlum/kızım <span class="sertifika-isim">{secilen_isim}</span>
-                                <strong>{faz_adi}</strong> yolculuğumuza ortak olduğun ve bu güzel deneyimi beraber paylaştığımız için kalpten teşekkür ederim. Başarılarının devamını dilerim.
-                            </div>
-                            <div class="sertifika-alt">
-                                <div class="imza-alani">
-                                    <strong>{veli_isim}</strong><br>
-                                    <div class="imza-cizgi"></div>
-                                    <span style="font-size: 13px; opacity:0.8;">İmza</span>
-                                </div>
-                                <div class="qyvam-logo">
-                                    <div class="qyvam-logo-text">✧ QYVAM ✧</div>
-                                    <div class="qyvam-logo-sub">Siber Uzay & Şahsiyet İnşası</div>
+                        <div class="certificate">
+                            <div class="border-outer">
+                                <div class="border-inner">
+                                    <div class="corner corner-tl"></div>
+                                    <div class="corner corner-tr"></div>
+                                    <div class="corner corner-bl"></div>
+                                    <div class="corner corner-br"></div>
+                                    
+                                    <div class="header">Qyvam Eğitim Sistemi</div>
+                                    <div class="title">{faz_adi}</div>
+                                    
+                                    <div class="salutation">Sevgili oğlum/kızım ;</div>
+                                    <div class="name">{secilen_isim}</div>
+                                    
+                                    <div class="description">
+                                        Bu bir sertifikadan daha fazlası; birlikte geçirdiğimiz harika anların bir hatırası!<br>
+                                        <strong>{faz_adi}</strong> yolculuğumuza ortak olduğun ve bu güzel deneyimi beraber paylaştığımız için kalpten teşekkür ederim. Başarılarının devamını dilerim.
+                                    </div>
+                                    
+                                    <div class="footer">
+                                        <!-- Sol Alt: Veli İmza -->
+                                        <div class="signature-block">
+                                            <div class="sign-name">{veli_isim}</div>
+                                            <div class="sign-title">Rehber Veli</div>
+                                            <div class="auto-signature">{veli_isim}</div>
+                                            <div class="sign-line"></div>
+                                        </div>
+                                        
+                                        <!-- Orta Alt: Kurdeleli Mühür (SVG) -->
+                                        <div class="seal">
+                                            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                                                <!-- Kurdeleler -->
+                                                <path d="M35 60 L20 100 L38 90 L50 100 Z" fill="{tema['border']}"/>
+                                                <path d="M65 60 L80 100 L62 90 L50 100 Z" fill="{tema['border']}"/>
+                                                <!-- Yıldızlı Rozet -->
+                                                <path d="M50 5 L56 16 L68 15 L70 27 L82 31 L77 42 L85 51 L75 58 L77 70 L65 72 L59 82 L50 74 L41 82 L35 72 L23 70 L25 58 L15 51 L23 42 L18 31 L30 27 L32 15 L44 16 Z" fill="{tema['border']}"/>
+                                                <circle cx="50" cy="43" r="24" fill="{tema['bg']}"/>
+                                                <polygon points="50,26 56,38 69,39 59,48 62,60 50,54 38,60 41,48 31,39 44,38" fill="{tema['border']}"/>
+                                            </svg>
+                                        </div>
+                                        
+                                        <!-- Sağ Alt: Qyvam Amblem -->
+                                        <div class="qyvam-logo-block">
+                                            <div class="qyvam-brand">✧ QYVAM ✧</div>
+                                            <div class="qyvam-sub">Siber Uzay & Şahsiyet İnşası</div>
+                                            <div class="sign-line" style="margin-top: 15px;"></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -692,19 +736,16 @@ def veli_panel_ekrani():
                     """
                     
                     st.markdown("### 📜 Tasarım Önizlemesi")
-                    # Sertifikayı Streamlit içinde göster
                     import streamlit.components.v1 as components
-                    components.html(html_icerik, height=600)
+                    components.html(html_icerik, height=750)
                     
-                    # Kullanıcının bilgisayarına indirmesi için buton
                     st.download_button(
-                        label="📥 Bu Beratı İndir (Yazdırmak İçin)",
+                        label="📥 Bu Beratı İndir (PDF / Çıktı İçin)",
                         data=html_icerik,
-                        file_name=f"Qyvam_{secilen_isim}_{faz_adi}.html",
+                        file_name=f"Qyvam_Berat_{secilen_isim}.html",
                         mime="text/html"
                     )
                     
-                    # Aynı zamanda dijital profile de not olarak düşelim
                     ozel_berat_ekle(secilen_id, faz_adi, "Veli tarafından özel tasarım berat takdim edildi.")
                     st.success(f"Berat tasarımı hazırlandı ve {secilen_isim} isimli çocuğun dijital profiline işlendi!")
 
