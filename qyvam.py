@@ -384,11 +384,13 @@ def ana_karsilama_ekrani():
 
     col1, col2, col3 = st.columns([1, 1.5, 1])
     with col2:
-        # Önce Animasyon (GIF) arar, yoksa PNG gösterir
-        qyman_gorsel = "qyman.gif" if os.path.exists("qyman.gif") else ("qyman.png" if os.path.exists("qyman.png") else None)
-        
-        if qyman_gorsel:
-            st.image(qyman_gorsel, use_container_width=True)
+        # Sistem önce MP4 arar (en hızlı ve kalitelisi), yoksa GIF, yoksa PNG gösterir.
+        if os.path.exists("qyman.mp4"):
+            st.video("qyman.mp4", autoplay=True, loop=True, muted=True)
+        elif os.path.exists("qyman.gif"):
+            st.image("qyman.gif", use_container_width=True)
+        elif os.path.exists("qyman.png"):
+            st.image("qyman.png", use_container_width=True)
             
         st.markdown("""
             <div class="qyman-hud" style="text-align: center; margin-top: -15px; position: relative; z-index: 10;">
