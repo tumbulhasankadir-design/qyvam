@@ -110,6 +110,9 @@ def kazanilan_sertifikalari_hesapla(adim):
 # ==============================================================================
 # YAPAY ZEKA BAĞLANTISI (API MOTORU)
 # ==============================================================================
+def # ==============================================================================
+# YAPAY ZEKA BAĞLANTISI (YEDEK MOTORLU API)
+# ==============================================================================
 def ai_cevap_uret(soru, mevcut_adim, rol="veli", cocuk_isim=""):
     if not OPENROUTER_KEY:
         return "[ SİSTEM UYARISI ]: API Anahtarı bulunamadı. Yapay zeka çevrimdışı."
@@ -121,15 +124,32 @@ def ai_cevap_uret(soru, mevcut_adim, rol="veli", cocuk_isim=""):
     else:
         prompt = f"Senin adın Qyman. Zeki, siber fütüristik bir dijital ikiz rehberisin. Karşındaki arkadaşının adı {cocuk_isim}. Cümlelerin kısa, cesaretlendirici olsun. Emojileri asla kullanma. Gelişim aşaması: {faz}. Soru: {soru}"
 
+    # SİSTEMİ ASLA ÇÖKERTMEZ: Sırayla aktif olanı bulana kadar dener
+    ucretsiz_modeller = [
+        "qwen/qwen-2-7b-instruct:free",
+        "microsoft/phi-3-mini-128k-instruct:free",
+        "huggingfaceh4/zephyr-7b-beta:free",
+        "openchat/openchat-7b:free",
+        "mistralai/mistral-7b-instruct:free",
+        "google/gemma-2-9b-it:free"
+    ]
+
     try:
         client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_KEY)
-        response = client.chat.completions.create(
-            model="mistralai/mistral-7b-instruct:free",
-            messages=[{"role": "user", "content": prompt}]
-        )
-        return response.choices[0].message.content
+        
+        for model_adi in ucretsiz_modeller:
+            try:
+                response = client.chat.completions.create(
+                    model=model_adi,
+                    messages=[{"role": "user", "content": prompt}]
+                )
+                return response.choices[0].message.content
+            except:
+                continue # Bu model kapalıysa sessizce bir sonrakine geç
+                
+        return "[ SİSTEM HATASI ]: Tüm ücretsiz AI kanalları şu an dolu veya kapalı. Lütfen biraz bekleyip tekrar deneyin."
     except Exception as e:
-        return f"[ SİSTEM HATASI ]: Veri paketi iletilemedi. Detay: {str(e)}"
+        return f"[ SİSTEM HATASI ]: Bağlantı kurulamadı. Detay: {str(e)}"
 
 # ==============================================================================
 # SİBER FÜTÜRİSTİK ARAYÜZ (CSS KATMANI)
