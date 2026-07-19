@@ -207,17 +207,18 @@ def ust_komuta_merkezi():
     col_sol, col_orta, col_sag = st.columns([2, 1, 4])
     with col_sol:
         if st.session_state.aktif_sayfa == "Ana Sayfa": durum_metni = "ANA SAYFA"
-        elif st.session_state.aktif_sayfa == "Veli_Panel" or st.session_state.aktif_sayfa == "Veli_Giris": durum_metni = "REHBER KOMUTA MERKEZİ"
+        elif st.session_state.aktif_sayfa == "Veli_Panel": durum_metni = "REHBER KOMUTA MERKEZİ"
         else: durum_metni = "DİJİTAL İKİZ BAĞLANTISI"
         st.markdown(f'<div class="breadcrumb">QYVAM SİBER UZAY > <b>{durum_metni}</b></div>', unsafe_allow_html=True)
         
     with col_orta:
         if st.session_state.aktif_sayfa == "Ana Sayfa" or st.session_state.aktif_sayfa == "Cocuk_Panel":
-            if st.button("[ YETKİLİ GİRİŞİ ]"):
-                st.session_state.aktif_sayfa = "Veli_Giris"
+            if st.button("Yetkili Girişi"): 
+                st.session_state.veli_yetkili = True # Şifreyi atlayıp doğrudan yetki veriyoruz
+                st.session_state.aktif_sayfa = "Veli_Panel" 
                 st.rerun()
         else:
-            if st.button("[ UZAY'A DÖN ]"):
+            if st.button("Uzay'a Dön"):
                 st.session_state.aktif_sayfa = "Ana Sayfa"
                 st.session_state.veli_yetkili = False
                 st.session_state.aktif_cocuk_id = None
@@ -231,14 +232,11 @@ def ust_komuta_merkezi():
         bekleyen_sayisi = len(onay_bekleyenleri_getir())
         bildirim_kodu = f'<span class="sensor-data" style="color:#fca5a5; border-color:#fca5a5;">[ ONAY BEKLEYEN: {bekleyen_sayisi} ]</span>' if bekleyen_sayisi > 0 else ''
 
-        ai_durum = "AKTİF" if OPENROUTER_KEY else "ÇEVRİMDIŞI"
-        ai_renk = "#38bdf8" if OPENROUTER_KEY else "#94a3b8"
-
+        # Kafa karıştıran AI Aktif yazısı tamamen kaldırıldı
         st.markdown(f'''
             <div style="text-align: right;">
-                <span class="sensor-data">{tarih_str} | SCK: 31°C | NEM: %40</span>
+                <span class="sensor-data">{tarih_str}</span>
                 {bildirim_kodu}
-                <span class="sensor-data" style="color:{ai_renk}; border-color:{ai_renk};">[ AI: {ai_durum} ]</span>
             </div>
             <hr style="border-color: rgba(56, 189, 248, 0.2); margin-top: 15px;">
         ''', unsafe_allow_html=True)
@@ -404,12 +402,12 @@ def cocuk_panel_ekrani():
     isim, mevcut_adim = bilgi
     adim_bilgisi = MUFREDAT.get(mevcut_adim, {"faz": "Zirve", "ust_seviye": "Tamamlandı", "alt_seviye": "Tebrikler", "varsayilan_gorev": "Tüm adımları başarıyla tamamladın.", "varsayilan_tefekkur": "Bu yolculuk sana ne kattı?"})
     
-    st.markdown(f'<h1 class="neon-text">BAĞLANTI ONAYLANDI: {isim.upper()}</h1><hr>', unsafe_allow_html=True)
+    st.markdown(f'<h1 class="neon-text" style="font-size: 2.5rem;">Hoş Geldin, {isim.title()}!</h1><hr>', unsafe_allow_html=True)
     
     saat = datetime.now().hour
-    if saat < 12: qyman_mesaj = "Sistemlerim yeni güne şarj oldu. İlk veri paketimizi işlemeye hazır mısın?"
-    elif saat < 18: qyman_mesaj = "Günün yarısını başarıyla geçtik. Siber çekirdeğimizi daha da parlatma vakti."
-    else: qyman_mesaj = "Siber uzayda yıldızlar parlıyor. Uyku moduna geçmeden önce tefekkür verilerimizi sisteme işleyelim."
+    if saat < 12: qyman_mesaj = "Günaydın! Yeni güne harika bir görevle başlamaya hazır mısın?"
+    elif saat < 18: qyman_mesaj = "Merhaba! Günün görevini tamamlayıp yıldızları toplamaya ne dersin?"
+    else: qyman_mesaj = "İyi akşamlar! Uyku moduna geçmeden bugünün görevini sisteme ekleyelim."
 
     col_img, col_hud = st.columns([1, 4])
     with col_img:
@@ -417,51 +415,52 @@ def cocuk_panel_ekrani():
         if os.path.exists(qyman_gorsel_yolu): st.image(qyman_gorsel_yolu, use_container_width=True)
     with col_hud:
         st.markdown(f"""
-            <div class="qyman-hud" style="margin-top:0;">
-                <span class="system-log">[SYSTEM LOG: User {isim} Active...]</span><br><br>
-                <b>QYMAN:</b> {qyman_mesaj}
+            <div class="qyman-hud" style="margin-top:0; font-size: 1.2rem;">
+                <b>🤖 Qyman Diyor ki:</b><br>{qyman_mesaj}
             </div>
         """, unsafe_allow_html=True)
 
-    t1, t2, t3 = st.tabs(["[ AKTİF VERİ GÖREVİ ]", "[ LİYAKAT BERATLARI ]", "[ QYMAN İLETİŞİM ]"])
+    # Çocuklar için sekmeleri daha anlaşılır ikonlu ve net metinlere dönüştürdük
+    t1, t2, t3 = st.tabs(["📍 Bugünün Görevi", "🏆 Kazandığım Beratlar", "💬 Qyman'a Soru Sor"])
 
     with t1:
         if bekleyen_gorev_kontrol(st.session_state.aktif_cocuk_id):
-            st.markdown('<div class="glass-box"><h3 class="neon-text">[ SİSTEM KİLİDİ AKTİF ]</h3><p style="color:#fca5a5;">Veri paketi şifrelendi ve Rehber onayına gönderildi.</p></div>', unsafe_allow_html=True)
+            st.markdown('<div class="glass-box"><h3 class="neon-text" style="color:#fca5a5;">Görev Onay Bekliyor ⏳</h3><p style="color:#94a3b8; font-size:1.1rem;">Görevini rehberine (veline) gönderdik. O onayladığında yeni görevine geçebilirsin!</p></div>', unsafe_allow_html=True)
         else:
             st.markdown(f'''
             <div class="glass-box">
-                <div class="system-log" style="margin-bottom:10px;">[ SİBER KONUM: {adim_bilgisi["faz"].upper()} - ADIM {mevcut_adim} ]</div>
-                <h3 class="neon-text">Kritik Eylem: {adim_bilgisi["varsayilan_gorev"]}</h3>
+                <p style="color:#94a3b8; font-size:1.1rem; margin-bottom:5px;">Aşama {mevcut_adim} : {adim_bilgisi["alt_seviye"]}</p>
+                <h2 class="neon-text" style="margin-top:0;">{adim_bilgisi["varsayilan_gorev"]}</h2>
                 <hr style="border-color: rgba(56, 189, 248, 0.2);">
-                <h4 class="neon-green">Tefekkür: {adim_bilgisi["varsayilan_tefekkur"]}</h4>
+                <h4 style="color:#10b981;">Düşünme Vakti: {adim_bilgisi["varsayilan_tefekkur"]}</h4>
             </div>
             ''', unsafe_allow_html=True)
             
-            cocuk_cevabi = st.text_area("İçsel Analizini (Tefekkürünü) Buraya Gir:", placeholder="[ Düşüncelerini buraya yaz... ]")
-            if st.button("[ VERİYİ ŞİFRELE VE REHBERE GÖNDER ]"):
-                if cocuk_cevabi.strip() == "": st.error("[ HATA ]: Veri paketi boş olamaz.")
+            cocuk_cevabi = st.text_area("Cevabını Buraya Yazabilirsin:", placeholder="Neler hissettin? Düşüncelerini buraya yaz...", height=100)
+            if st.button("✨ Görevimi Tamamladım, Gönder!"):
+                if cocuk_cevabi.strip() == "": st.error("Lütfen göndermeden önce kutuya birkaç cümle yaz.")
                 else:
                     g_adi = f"[ ADIM {mevcut_adim} ]: {adim_bilgisi['alt_seviye']}"
                     cocuk_veri_gonder(st.session_state.aktif_cocuk_id, g_adi, cocuk_cevabi)
-                    st.success("[ İŞLEM BAŞARILI ]: Veri paketi şifrelendi.")
+                    st.success("Tebrikler! Cevabın başarıyla gönderildi.")
                     st.rerun()
             
     with t2:
-        st.markdown('<div class="glass-box"><h3 class="neon-text">Kazanılan Beratlar</h3></div>', unsafe_allow_html=True)
+        st.markdown('<div class="glass-box"><h3>Kazandığın Başarı Beratları</h3></div>', unsafe_allow_html=True)
         sertifikalar = kazanilan_sertifikalari_hesapla(mevcut_adim)
+        if not sertifikalar:
+            st.info("Henüz bir berat kazanmadın. Görevleri tamamladıkça burası dolacak!")
         for s_adi, s_aciklama in sertifikalar:
             st.markdown(f'<div class="glass-task" style="border-left-color: #d946ef;"><h3 style="color: #f0abfc; margin:0;">{s_adi}</h3><p style="color: #e2e8f0;">{s_aciklama}</p></div>', unsafe_allow_html=True)
 
     with t3:
-        st.markdown('<div class="glass-box"><h3 class="neon-text">Yapay Zeka Bağlantısı</h3></div>', unsafe_allow_html=True)
-        cocuk_sorusu = st.text_input("Qyman'a Mesaj Gönder:", placeholder="[ Örn: Bu görevi yaparken zorlandım, ne yapmalıyım? ]")
-        if st.button("[ QYMAN'A İLET ]"):
+        st.markdown('<div class="glass-box"><h3>Qyman ile Konuş</h3><p style="color:#94a3b8;">Görevle ilgili yardıma ihtiyacın varsa Qyman\'a sorabilirsin.</p></div>', unsafe_allow_html=True)
+        cocuk_sorusu = st.text_input("Sorunu Buraya Yaz:", placeholder="Örn: Bu görevi yaparken zorlandım, bana ipucu verir misin?")
+        if st.button("🤖 Qyman'a Gönder"):
             if cocuk_sorusu:
-                with st.spinner("Qyman veriyi işliyor..."):
+                with st.spinner("Qyman düşünüyor..."):
                     yanit = ai_cevap_uret(cocuk_sorusu, mevcut_adim, rol="cocuk", cocuk_isim=isim)
                 st.success(yanit)
-
 # ==============================================================================
 # ROUTER
 # ==============================================================================
