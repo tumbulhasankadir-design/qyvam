@@ -111,7 +111,7 @@ def kazanilan_sertifikalari_hesapla(adim):
 # YAPAY ZEKA BAĞLANTISI (API MOTORU)
 # ==============================================================================
 # ==============================================================================
-# YAPAY ZEKA BAĞLANTISI (YEDEK MOTORLU API)
+# YAPAY ZEKA BAĞLANTISI (YEDEK MOTORLU VE HATA CASUSLU API)
 # ==============================================================================
 def ai_cevap_uret(soru, mevcut_adim, rol="veli", cocuk_isim=""):
     if not OPENROUTER_KEY:
@@ -124,7 +124,6 @@ def ai_cevap_uret(soru, mevcut_adim, rol="veli", cocuk_isim=""):
     else:
         prompt = f"Senin adın Qyman. Zeki, siber fütüristik bir dijital ikiz rehberisin. Karşındaki arkadaşının adı {cocuk_isim}. Cümlelerin kısa, cesaretlendirici olsun. Emojileri asla kullanma. Gelişim aşaması: {faz}. Soru: {soru}"
 
-    # SİSTEMİ ASLA ÇÖKERTMEZ: Sırayla aktif olanı bulana kadar dener
     ucretsiz_modeller = [
         "qwen/qwen-2-7b-instruct:free",
         "microsoft/phi-3-mini-128k-instruct:free",
@@ -137,6 +136,7 @@ def ai_cevap_uret(soru, mevcut_adim, rol="veli", cocuk_isim=""):
     try:
         client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=OPENROUTER_KEY)
         
+        son_hata = ""
         for model_adi in ucretsiz_modeller:
             try:
                 response = client.chat.completions.create(
@@ -144,10 +144,12 @@ def ai_cevap_uret(soru, mevcut_adim, rol="veli", cocuk_isim=""):
                     messages=[{"role": "user", "content": prompt}]
                 )
                 return response.choices[0].message.content
-            except:
-                continue # Bu model kapalıysa sessizce bir sonrakine geç
+            except Exception as e:
+                son_hata = str(e) # Hatayı hafızaya al ama sistemi çökertme
+                continue
                 
-        return "[ SİSTEM HATASI ]: Tüm ücretsiz AI kanalları şu an dolu veya kapalı. Lütfen biraz bekleyip tekrar deneyin."
+        # Eğer hiçbiri çalışmazsa, ekrana son hatanın ne olduğunu yazdır
+        return f"[ SİSTEM DETAYI ]: Ücretsiz kanallar kapalı. Rapor: {son_hata}"
     except Exception as e:
         return f"[ SİSTEM HATASI ]: Bağlantı kurulamadı. Detay: {str(e)}"
 
