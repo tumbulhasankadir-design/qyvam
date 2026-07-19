@@ -149,50 +149,61 @@ def ai_cevap_uret(soru, mevcut_adim, rol="veli", cocuk_isim=""):
         return f"[ SİSTEM HATASI ]: Bağlantı kurulamadı. Detay: {str(e)}"
 
 # ==============================================================================
-# SİBER FÜTÜRİSTİK ARAYÜZ (CSS KATMANI)
+# AYDINLIK / PASTEL EĞİTİM ARAYÜZÜ (CSS KATMANI)
 # ==============================================================================
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Nunito:wght@400;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap');
 
-    html, body, [class*="css"] { font-family: 'Nunito', sans-serif; background-color: #0b0f19; color: #e2e8f0; }
-    h1, h2, h3, h4, h5 { font-family: 'Chakra Petch', sans-serif; font-weight: 700; color: #38bdf8; }
+    /* Genel Arkaplan ve Metinler */
+    html, body, [class*="css"] { font-family: 'Nunito', sans-serif; background-color: #f0f4f8 !important; color: #334155 !important; }
+    
+    /* Başlıklar - Daha tatlı, yuvarlak hatlı eğitim fontu */
+    h1, h2, h3, h4, h5 { font-family: 'Baloo 2', sans-serif; font-weight: 700; color: #4f46e5 !important; }
 
-    /* Kutulardaki gölge ve kirliliği azaltarak sadeleştirdik */
-    .glass-box { background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 12px; padding: 25px; margin-bottom: 20px; }
-    .glass-task { background: rgba(10, 15, 30, 0.6); border-left: 3px solid #fca5a5; border-radius: 8px; padding: 20px; margin-bottom: 15px; }
+    /* Kutular - Beyaz, yumuşak gölgeli, pastel köşeli */
+    .glass-box { background: #ffffff; border: 2px solid #e0e7ff; border-radius: 16px; padding: 25px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.05); }
+    .glass-task { background: #fdf2f8; border-left: 5px solid #f472b6; border-radius: 12px; padding: 20px; margin-bottom: 15px; }
     
-    .top-bar { background: rgba(15, 23, 42, 0.8); border-bottom: 1px solid rgba(56, 189, 248, 0.3); padding: 15px; margin-top: -50px; margin-bottom: 30px; border-radius: 0 0 15px 15px; }
+    /* Üst Çubuk */
+    .top-bar { background: #ffffff; border-bottom: 3px solid #e0e7ff; padding: 15px; margin-top: -50px; margin-bottom: 30px; border-radius: 0 0 20px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
     
-    .breadcrumb { color: #94a3b8; font-size: 0.9rem; letter-spacing: 1px; }
-    .breadcrumb b { color: #38bdf8; }
-    .sensor-data { color: #a7f3d0; font-size: 0.85rem; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); padding: 5px 10px; border-radius: 5px; margin-right: 10px; display: inline-block; }
+    /* Bilgi Metinleri ve Etiketler */
+    .breadcrumb { color: #64748b; font-size: 0.95rem; font-weight: 600; }
+    .breadcrumb b { color: #4f46e5; }
+    .sensor-data { color: #0284c7; font-size: 0.85rem; background: #e0f2fe; border: 1px solid #bae6fd; padding: 5px 12px; border-radius: 8px; margin-right: 10px; display: inline-block; font-weight: 700; }
     
-    .qyman-hud { background: rgba(10, 15, 30, 0.6); border-left: 3px solid #38bdf8; border-radius: 8px; padding: 20px; font-family: 'Chakra Petch', sans-serif; color: #a7f3d0; line-height: 1.6; margin-bottom: 20px;}
-    .neon-text { color: #38bdf8; text-shadow: 0 0 8px rgba(56, 189, 248, 0.3); }
-    .neon-green { color: #10b981; }
-    .system-log { color: #6ee7b7; font-size: 0.85rem; font-family: monospace; letter-spacing: 1px; }
+    /* Qyman Mesaj Kutusu (Yumuşak Konuşma Balonu Hissi) */
+    .qyman-hud { background: #eff6ff; border-left: 5px solid #3b82f6; border-radius: 12px; padding: 20px; font-family: 'Nunito', sans-serif; color: #1e3a8a; line-height: 1.6; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.08); }
     
-    .radar-baslik { color: #38bdf8; font-weight: bold; margin-top: 10px; font-family: 'Chakra Petch', sans-serif; }
-    .radar-adim { color: #94a3b8; font-size: 0.85rem; margin-left: 15px; padding-top: 3px; border-left: 1px solid #334155; padding-left: 10px; }
+    /* Eski Neon sınıflarını Pastel tonlara çevirdik */
+    .neon-text { color: #4f46e5 !important; text-shadow: none; }
+    .neon-green { color: #059669 !important; font-weight: 700; }
+    .system-log { color: #8b5cf6; font-size: 0.95rem; font-weight: 700; }
     
-    .stButton>button { border-radius: 5px; font-family: 'Chakra Petch', sans-serif; font-weight: bold; border: 1px solid #38bdf8; background-color: rgba(15, 23, 42, 0.8); color: #38bdf8; transition: all 0.2s; width: 100%; }
-    .stButton>button:hover { background-color: #38bdf8; color: #0b0f19; }
+    /* Sol Menü (Radar) */
+    .radar-baslik { color: #ec4899; font-weight: 700; margin-top: 15px; font-family: 'Baloo 2', sans-serif; font-size: 1.2rem; }
+    .radar-adim { color: #64748b; font-size: 0.95rem; margin-left: 15px; padding-top: 5px; border-left: 3px solid #e2e8f0; padding-left: 12px; font-weight: 600; }
     
-    /* İSTENEN GÜNCELLEME: Beyaz zemin, siyah font ve siber kenarlıklar */
+    /* Butonlar - Yumuşak hatlı, renkli ve eğlenceli */
+    .stButton>button { border-radius: 12px; font-family: 'Baloo 2', sans-serif; font-size: 1.1rem !important; font-weight: 700; border: none; background-color: #6366f1; color: white !important; transition: all 0.3s ease; width: 100%; box-shadow: 0 4px 6px rgba(99, 102, 241, 0.25); }
+    .stButton>button:hover { background-color: #4f46e5; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(99, 102, 241, 0.35); }
+    
+    /* Girdi Kutuları (Input/Textarea) */
     .stTextInput>div>div>input, .stTextArea>div>div>textarea { 
-        background-color: #ffffff !important; 
-        color: #0b0f19 !important; 
-        border: 2px solid #38bdf8 !important; 
-        border-radius: 8px !important; 
+        background-color: #f8fafc !important; 
+        color: #334155 !important; 
+        border: 2px solid #cbd5e1 !important; 
+        border-radius: 12px !important; 
         font-weight: 600 !important;
+        transition: all 0.2s;
     }
     .stTextInput>div>div>input::placeholder, .stTextArea>div>div>textarea::placeholder {
         color: #94a3b8 !important;
-        font-weight: 400 !important;
     }
     .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus {
-        box-shadow: 0 0 10px rgba(56, 189, 248, 0.5) !important;
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15) !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -267,38 +278,38 @@ def sol_radar_olustur():
                     st.markdown(f"<div class='radar-adim'>Adım {adim_no}: {alt_adi}</div>", unsafe_allow_html=True)
 
 # ==============================================================================
-# SAYFA 1: ANA KARŞILAMA EKRANI
+# SAYFA 1: ANA KARŞILAMA EKRANI (EĞİTİM TEMALI)
 # ==============================================================================
 def ana_karsilama_ekrani():
-    st.markdown('<h1 class="neon-text" style="text-align:center; font-size:4.5rem; margin-bottom: 0px;">Q Y V A M</h1>', unsafe_allow_html=True)
-    st.markdown('<p style="text-align:center; color:#64748b; font-family:\'Chakra Petch\'; letter-spacing: 4px;">[ BİLİŞSEL İKLİM VE ŞAHSİYET İNŞASI AĞI ]</p><br>', unsafe_allow_html=True)
+    st.markdown('<h1 class="neon-text" style="text-align:center; font-size:4.5rem; margin-bottom: 0px; color:#4f46e5;">Q Y V A M</h1>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align:center; color:#64748b; font-family:\'Baloo 2\'; font-size: 1.2rem; font-weight: 600;">Bilişsel İklim ve Şahsiyet İnşası Serüveni</p><br>', unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        qyman_gorsel_yolu = "qyman.png"
+        qyman_gorsel_yolu = "qyman.png" # veya qyman.jpg
         if os.path.exists(qyman_gorsel_yolu):
             st.image(qyman_gorsel_yolu, use_container_width=True)
             
         st.markdown("""
-            <div class="qyman-hud">
-                <span class="system-log">[SYSTEM LOG: Core Processor Active...]</span><br><br>
-                <b>QYMAN VERİ AKIŞI:</b> Siber uzaya hoş geldin. Sistemlerim aktif. Gelişim haritamıza sol panelden ulaşabilirsin. Sisteme giriş yapmak için aşağıdan Dijital İkiz profilini seç ve bağlantıyı başlat.
+            <div class="qyman-hud" style="text-align: center;">
+                <span class="system-log" style="font-size:1.2rem;">✨ Serüvene Hoş Geldin! ✨</span><br><br>
+                <b>Ben Qyman, senin dijital rehberinim!</b><br>
+                Gelişim haritamıza sol panelden ulaşabilirsin. Maceraya başlamak için aşağıdan kendi ismini seç ve <b>Bağlantıyı Başlat</b> butonuna tıkla!
             </div>
         """, unsafe_allow_html=True)
         
         cocuklar = cocuklari_getir()
         if not cocuklar:
-            st.warning("[ SİSTEM UYARISI ]: Kayıtlı veri bulunamadı. Lütfen Rehber Paneli üzerinden yeni profil oluşturun.")
+            st.warning("⚠️ Sistemde henüz kayıtlı bir profil yok. Lütfen Yetkili Girişi'nden yeni bir isim ekleyin.")
         else:
             st.markdown('<div class="glass-box">', unsafe_allow_html=True)
-            st.markdown('<h4 class="neon-text" style="text-align:center;">DİJİTAL İKİZ BAĞLANTISI</h4></div>', unsafe_allow_html=True)
+            st.markdown('<h4 class="neon-text" style="text-align:center;">İsmini Seç ve Başla</h4></div>', unsafe_allow_html=True)
             secilen = st.selectbox("Profil Seçiniz", [c[1] for c in cocuklar], label_visibility="collapsed")
-            if st.button("[ BAĞLANTIYI BAŞLAT ]"):
+            if st.button("🚀 Bağlantıyı Başlat"):
                 st.session_state.aktif_cocuk_isim = secilen
                 st.session_state.aktif_cocuk_id = next(c[0] for c in cocuklar if c[1] == secilen)
                 st.session_state.aktif_sayfa = "Cocuk_Panel"
                 st.rerun()
-
 # ==============================================================================
 # SAYFA 2: VELİ GÜVENLİK PROTOKOLÜ (PIN EKRANI)
 # ==============================================================================
