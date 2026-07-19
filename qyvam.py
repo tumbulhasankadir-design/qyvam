@@ -544,23 +544,169 @@ def veli_panel_ekrani():
                 st.rerun()
 
     with t4:
-        st.markdown('<div class="glass-box"><h3>Özel Berat / Sertifika Tasarla</h3><p style="color:#64748b;">Oluşturduğunuz berat doğrudan çocuğun dijital profiline kaydedilir.</p></div>', unsafe_allow_html=True)
+        st.markdown('<div class="glass-box"><h3>Özel Berat / Sertifika Tasarla</h3><p style="color:#64748b;">Görsel olarak harika sertifikalar oluşturun, bilgisayarınıza indirin ve yazdırın.</p></div>', unsafe_allow_html=True)
+        
         cocuklar = cocuklari_getir()
         if not cocuklar:
             st.warning("Önce 'Sisteme Kayıt' sekmesinden bir çocuk eklemelisiniz.")
         else:
-            secilen_isim = st.selectbox("Beratı Kazanacak Çocuğu Seçin:", [c[1] for c in cocuklar])
-            secilen_id = next(c[0] for c in cocuklar if c[1] == secilen_isim)
-            
-            berat_adi = st.text_input("Beratın Adı:", placeholder="Örn: Cesur Kaşif Beratı")
-            berat_aciklamasi = st.text_area("Açıklaması / Veriliş Nedeni:", placeholder="Örn: Odanı kendi başına düzenleme sorumluluğunu aldığın için...")
-            
-            if st.button("🎉 Beratı Çocuğun Profiline Ekle"):
-                if berat_adi and berat_aciklamasi:
-                    ozel_berat_ekle(secilen_id, berat_adi, berat_aciklamasi)
-                    st.success(f"Harika! '{berat_adi}' başarıyla {secilen_isim} isimli çocuğun profiline eklendi.")
+            # 7 Farklı Tasarım Teması
+            BERAT_TEMALARI = {
+                "1. Antik Parşömen (Tarihi/Klasik)": {"bg": "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)", "border": "#78350f", "text": "#451a03", "logo": "#92400e"},
+                "2. Siber Uzay (Fütüristik/Mavi)": {"bg": "linear-gradient(135deg, #eff6ff 0%, #bfdbfe 100%)", "border": "#1d4ed8", "text": "#1e3a8a", "logo": "#2563eb"},
+                "3. Kökler ve Doğa (Huzur/Yeşil)": {"bg": "linear-gradient(135deg, #f0fdf4 0%, #bbf7d0 100%)", "border": "#166534", "text": "#14532d", "logo": "#15803d"},
+                "4. Güneş Yıldızı (Enerji/Sarı)": {"bg": "linear-gradient(135deg, #fefce8 0%, #fef08a 100%)", "border": "#a16207", "text": "#713f12", "logo": "#ca8a04"},
+                "5. Derin Okyanus (Bilgelik/Lacivert)": {"bg": "linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%)", "border": "#334155", "text": "#0f172a", "logo": "#475569"},
+                "6. Neon Işıklar (Canlı/Pembe)": {"bg": "linear-gradient(135deg, #fdf2f8 0%, #fbcfe8 100%)", "border": "#be185d", "text": "#831843", "logo": "#db2777"},
+                "7. Zarif Minimal (Sade/Beyaz)": {"bg": "#ffffff", "border": "#cbd5e1", "text": "#334155", "logo": "#64748b"}
+            }
+
+            col_sol, col_sag = st.columns([1, 1])
+            with col_sol:
+                secilen_isim = st.selectbox("Beratı Kazanacak Çocuğu Seçin:", [c[1] for c in cocuklar])
+                secilen_id = next(c[0] for c in cocuklar if c[1] == secilen_isim)
+                
+                veli_isim = st.text_input("Anne/Baba Adı Soyadı:", placeholder="Örn: Ahmet Yılmaz")
+                faz_adi = st.selectbox("Hangi Faz İçin Veriliyor?", [
+                    "KÖKLER FAZI", "BAĞLAR FAZI", "PUSULA FAZI", 
+                    "AYNALAR FAZI", "ÇARKLAR FAZI", "KÖPRÜLER FAZI", "KANATLAR FAZI", "ÖZEL BAŞARI"
+                ])
+                secilen_tema = st.selectbox("Sertifika Tasarımı (7 Farklı Tema):", list(BERAT_TEMALARI.keys()))
+                
+            with col_sag:
+                st.info("💡 **Nasıl Çıktı Alınır?**\nBeratınızı oluşturduktan sonra 'İndir' butonuna basarak bilgisayarınıza kaydedin. İnen dosyaya çift tıklayıp tarayıcıda açtıktan sonra klavyeden **Ctrl+P** tuşlarına basarak PDF olarak kaydedebilir veya renkli yazıcıdan çıkartabilirsiniz.")
+                olustur_buton = st.button("🎨 Beratı Ekranda Çiz ve Oluştur")
+
+            if olustur_buton:
+                if not veli_isim:
+                    st.error("Lütfen imza alanı için Anne/Baba adını giriniz.")
                 else:
-                    st.error("Lütfen berat adını ve açıklamasını boş bırakmayın.")
+                    tema = BERAT_TEMALARI[secilen_tema]
+                    
+                    # Muazzam Görünümlü HTML CSS Sertifika Şablonu
+                    html_icerik = f"""
+                    <html>
+                    <head>
+                    <meta charset="utf-8">
+                    <style>
+                        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Great+Vibes&family=Montserrat:wght@400;600&display=swap');
+                        
+                        body {{ margin: 0; padding: 0; display: flex; justify-content: center; background: transparent; }}
+                        .sertifika-container {{
+                            width: 800px;
+                            height: 560px;
+                            padding: 40px;
+                            background: {tema['bg']};
+                            border: 15px solid {tema['border']};
+                            border-radius: 10px;
+                            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+                            position: relative;
+                            text-align: center;
+                            font-family: 'Montserrat', sans-serif;
+                            color: {tema['text']};
+                            box-sizing: border-box;
+                        }}
+                        .sertifika-baslik {{
+                            font-family: 'Cinzel', serif;
+                            font-size: 38px;
+                            font-weight: 700;
+                            margin-bottom: 25px;
+                            text-transform: uppercase;
+                            letter-spacing: 2px;
+                            border-bottom: 2px solid {tema['border']};
+                            display: inline-block;
+                            padding-bottom: 10px;
+                        }}
+                        .sertifika-metin {{
+                            font-size: 17px;
+                            line-height: 1.8;
+                            margin: 10px 40px;
+                        }}
+                        .sertifika-isim {{
+                            font-family: 'Great Vibes', cursive;
+                            font-size: 46px;
+                            color: {tema['border']};
+                            display: block;
+                            margin: 15px 0;
+                        }}
+                        .sertifika-alt {{
+                            position: absolute;
+                            bottom: 40px;
+                            left: 50px;
+                            right: 50px;
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: flex-end;
+                        }}
+                        .imza-alani {{
+                            text-align: left;
+                            font-size: 16px;
+                        }}
+                        .imza-cizgi {{
+                            margin-top: 50px;
+                            border-top: 1px solid {tema['text']};
+                            width: 200px;
+                        }}
+                        .qyvam-logo {{
+                            text-align: right;
+                        }}
+                        .qyvam-logo-text {{
+                            font-family: 'Cinzel', serif;
+                            font-size: 32px;
+                            font-weight: 700;
+                            color: {tema['logo']};
+                            letter-spacing: 4px;
+                            margin-bottom: 5px;
+                        }}
+                        .qyvam-logo-sub {{
+                            font-size: 11px;
+                            letter-spacing: 2px;
+                            opacity: 0.8;
+                            text-transform: uppercase;
+                            font-weight: 600;
+                        }}
+                    </style>
+                    </head>
+                    <body>
+                        <div class="sertifika-container">
+                            <div class="sertifika-baslik">{faz_adi}</div>
+                            <div class="sertifika-metin">
+                                Bu bir sertifikadan daha fazlası; birlikte geçirdiğimiz harika anların bir hatırası!<br>
+                                Sevgili oğlum/kızım <span class="sertifika-isim">{secilen_isim}</span>
+                                <strong>{faz_adi}</strong> yolculuğumuza ortak olduğun ve bu güzel deneyimi beraber paylaştığımız için kalpten teşekkür ederim. Başarılarının devamını dilerim.
+                            </div>
+                            <div class="sertifika-alt">
+                                <div class="imza-alani">
+                                    <strong>{veli_isim}</strong><br>
+                                    <div class="imza-cizgi"></div>
+                                    <span style="font-size: 13px; opacity:0.8;">İmza</span>
+                                </div>
+                                <div class="qyvam-logo">
+                                    <div class="qyvam-logo-text">✧ QYVAM ✧</div>
+                                    <div class="qyvam-logo-sub">Siber Uzay & Şahsiyet İnşası</div>
+                                </div>
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                    """
+                    
+                    st.markdown("### 📜 Tasarım Önizlemesi")
+                    # Sertifikayı Streamlit içinde göster
+                    import streamlit.components.v1 as components
+                    components.html(html_icerik, height=600)
+                    
+                    # Kullanıcının bilgisayarına indirmesi için buton
+                    st.download_button(
+                        label="📥 Bu Beratı İndir (Yazdırmak İçin)",
+                        data=html_icerik,
+                        file_name=f"Qyvam_{secilen_isim}_{faz_adi}.html",
+                        mime="text/html"
+                    )
+                    
+                    # Aynı zamanda dijital profile de not olarak düşelim
+                    ozel_berat_ekle(secilen_id, faz_adi, "Veli tarafından özel tasarım berat takdim edildi.")
+                    st.success(f"Berat tasarımı hazırlandı ve {secilen_isim} isimli çocuğun dijital profiline işlendi!")
 
     with t5:
         st.markdown('<div class="glass-box"><h3>Sistem Kayıt Yönetimi</h3><p style="color:#64748b;">Yeni profil ekleyebilir veya mevcut profilleri sistemden tamamen silebilirsiniz.</p></div>', unsafe_allow_html=True)
