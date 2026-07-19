@@ -367,38 +367,53 @@ def sol_radar_olustur():
                     st.markdown(f"<div class='radar-adim'>Adım {adim_no}: {alt_adi}</div>", unsafe_allow_html=True)
 
 # ==============================================================================
-# SAYFA 1: ANA KARŞILAMA EKRANI (EĞİTİM TEMALI)
+# SAYFA 1: ANA KARŞILAMA EKRANI (DÜZENLİ VE ŞIK TASARIM)
 # ==============================================================================
 def ana_karsilama_ekrani():
-    st.markdown('<h1 class="neon-text" style="text-align:center; font-size:4.5rem; margin-bottom: 0px; color:#4f46e5;">Q Y V A M</h1>', unsafe_allow_html=True)
-    st.markdown('<p style="text-align:center; color:#64748b; font-family:\'Baloo 2\'; font-size: 1.2rem; font-weight: 600;">Bilişsel İklim ve Şahsiyet İnşası Serüveni</p><br>', unsafe_allow_html=True)
+    st.markdown("""
+        <style>
+        .hero-title { text-align: center; font-size: 4.5rem; color: #4f46e5; margin-bottom: 0; font-family: 'Baloo 2', sans-serif; font-weight: 800; letter-spacing: 2px; }
+        .hero-subtitle { text-align: center; color: #64748b; font-size: 1.2rem; font-weight: 600; margin-bottom: 25px; letter-spacing: 1px; }
+        .login-console { background: #ffffff; border: 2px solid #e0e7ff; border-radius: 20px; padding: 35px; box-shadow: 0 10px 30px rgba(79, 70, 229, 0.08); margin-top: 15px; }
+        .login-header { text-align:center; color:#4f46e5; margin-bottom:20px; font-family: 'Baloo 2', sans-serif; font-weight: 700; letter-spacing: 1px;}
+        </style>
+    """, unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns([1, 2, 1])
+    st.markdown('<div class="hero-title">Q Y V A M</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-subtitle">Bilişsel İklim ve Şahsiyet İnşası Serüveni</div>', unsafe_allow_html=True)
+
+    col1, col2, col3 = st.columns([1, 1.5, 1])
     with col2:
-        qyman_gorsel_yolu = "qyman.png"
-        if os.path.exists(qyman_gorsel_yolu):
-            st.image(qyman_gorsel_yolu, use_container_width=True)
+        # Önce Animasyon (GIF) arar, yoksa PNG gösterir
+        qyman_gorsel = "qyman.gif" if os.path.exists("qyman.gif") else ("qyman.png" if os.path.exists("qyman.png") else None)
+        
+        if qyman_gorsel:
+            st.image(qyman_gorsel, use_container_width=True)
             
         st.markdown("""
-            <div class="qyman-hud" style="text-align: center;">
-                <span class="system-log" style="font-size:1.2rem;">✨ Serüvene Hoş Geldin! ✨</span><br><br>
-                <b>Ben Qyman, senin dijital rehberinim!</b><br>
-                Gelişim haritamıza sol panelden ulaşabilirsin. Maceraya başlamak için aşağıdan kendi ismini seç ve <b>Bağlantıyı Başlat</b> butonuna tıkla!
+            <div class="qyman-hud" style="text-align: center; margin-top: -15px; position: relative; z-index: 10;">
+                <span class="system-log" style="font-size:1.2rem;">✨ Sisteme Hoş Geldin! ✨</span><br><br>
+                <b>Ben Qyman, senin dijital rehberinim.</b><br>
+                Maceraya başlamak için aşağıdan profilini seç ve bağlantıyı kur.
             </div>
         """, unsafe_allow_html=True)
         
         cocuklar = cocuklari_getir()
         if not cocuklar:
-            st.warning("⚠️ Sistemde henüz kayıtlı bir profil yok. Lütfen Yetkili Girişi'nden yeni bir isim ekleyin.")
+            st.warning("⚠️ Sistemde henüz kayıtlı bir profil yok. Lütfen 'Rehber Girişi' yaparak yeni bir isim ekleyin.")
         else:
-            st.markdown('<div class="glass-box">', unsafe_allow_html=True)
-            st.markdown('<h4 class="neon-text" style="text-align:center;">İsmini Seç ve Başla</h4></div>', unsafe_allow_html=True)
-            secilen = st.selectbox("Profil Seçiniz", [c[1] for c in cocuklar], label_visibility="collapsed")
-            if st.button("🚀 Bağlantıyı Başlat"):
+            st.markdown('<div class="login-console">', unsafe_allow_html=True)
+            st.markdown('<div class="login-header">[ BAĞLANTI MODÜLÜ ]</div>', unsafe_allow_html=True)
+            
+            secilen = st.selectbox("Kayıtlı Profiliniz:", [c[1] for c in cocuklar], label_visibility="collapsed")
+            
+            st.markdown('<br>', unsafe_allow_html=True)
+            if st.button("🚀 SİBER UZAYA BAĞLAN", use_container_width=True):
                 st.session_state.aktif_cocuk_isim = secilen
                 st.session_state.aktif_cocuk_id = next(c[0] for c in cocuklar if c[1] == secilen)
                 st.session_state.aktif_sayfa = "Cocuk_Panel"
                 st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
 
 # ==============================================================================
 # SAYFA 2: VELİ GÜVENLİK PROTOKOLÜ (PIN EKRANI)
@@ -550,7 +565,6 @@ def veli_panel_ekrani():
         if not cocuklar:
             st.warning("Önce 'Sisteme Kayıt' sekmesinden bir çocuk eklemelisiniz.")
         else:
-            # 7 Farklı Tasarım Teması
             BERAT_TEMALARI = {
                 "1. Antik Parşömen (Tarihi/Klasik)": {"bg": "#fefce8", "border": "#92400e", "text": "#451a03"},
                 "2. Siber Uzay (Fütüristik/Mavi)": {"bg": "#eff6ff", "border": "#1e40af", "text": "#1e3a8a"},
@@ -583,98 +597,38 @@ def veli_panel_ekrani():
                 else:
                     tema = BERAT_TEMALARI[secilen_tema]
                     
-                    # Canva Referanslı Profesyonel CSS/HTML Sertifika Şablonu
                     html_icerik = f"""
                     <html>
                     <head>
                     <meta charset="utf-8">
                     <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel:wght@600;700&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
                     <style>
-                        body {{
-                            margin: 0; padding: 0;
-                            display: flex; justify-content: center;
-                            background: transparent;
-                        }}
-                        .certificate {{
-                            width: 1000px;
-                            height: 707px; /* A4 Yatay Oranı */
-                            background: {tema['bg']};
-                            padding: 35px;
-                            box-sizing: border-box;
-                            position: relative;
-                        }}
-                        .border-outer {{
-                            width: 100%; height: 100%;
-                            border: 2px solid {tema['border']};
-                            padding: 8px;
-                            box-sizing: border-box;
-                        }}
-                        .border-inner {{
-                            width: 100%; height: 100%;
-                            border: 4px solid {tema['border']};
-                            padding: 50px 70px;
-                            box-sizing: border-box;
-                            position: relative;
-                            text-align: center;
-                        }}
-                        /* Klasik Köşe Süslemeleri (Canva benzeri) */
-                        .corner {{
-                            position: absolute; width: 15px; height: 15px;
-                            background: {tema['bg']};
-                            border: 3px solid {tema['border']};
-                            border-radius: 50%;
-                        }}
+                        body {{ margin: 0; padding: 0; display: flex; justify-content: center; background: transparent; }}
+                        .certificate {{ width: 1000px; height: 707px; background: {tema['bg']}; padding: 35px; box-sizing: border-box; position: relative; }}
+                        .border-outer {{ width: 100%; height: 100%; border: 2px solid {tema['border']}; padding: 8px; box-sizing: border-box; }}
+                        .border-inner {{ width: 100%; height: 100%; border: 4px solid {tema['border']}; padding: 50px 70px; box-sizing: border-box; position: relative; text-align: center; }}
+                        
+                        .corner {{ position: absolute; width: 15px; height: 15px; background: {tema['bg']}; border: 3px solid {tema['border']}; border-radius: 50%; }}
                         .corner-tl {{ top: -10px; left: -10px; }}
                         .corner-tr {{ top: -10px; right: -10px; }}
                         .corner-bl {{ bottom: -10px; left: -10px; }}
                         .corner-br {{ bottom: -10px; right: -10px; }}
                         
-                        .header {{
-                            font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 500;
-                            color: {tema['text']}; text-transform: uppercase; letter-spacing: 2px;
-                            margin-bottom: 10px;
-                        }}
-                        .title {{
-                            font-family: 'Cinzel', serif; font-size: 52px; font-weight: 700;
-                            color: {tema['border']}; margin-bottom: 30px; letter-spacing: 1px;
-                        }}
-                        .salutation {{
-                            font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 600;
-                            color: {tema['text']}; margin-bottom: 5px;
-                        }}
-                        .name {{
-                            font-family: 'Alex Brush', cursive; font-size: 85px;
-                            color: {tema['border']}; margin: 0 0 25px 0; line-height: 1.1;
-                        }}
-                        .description {{
-                            font-family: 'Montserrat', sans-serif; font-size: 16px; line-height: 1.8;
-                            color: {tema['text']}; margin: 0 auto 40px auto; max-width: 85%;
-                        }}
-                        .footer {{
-                            display: flex; justify-content: space-between; align-items: flex-end;
-                            position: absolute; bottom: 50px; left: 70px; right: 70px;
-                        }}
-                        .signature-block, .qyvam-logo-block {{
-                            text-align: center; width: 220px; position: relative; z-index: 10;
-                        }}
+                        .header {{ font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 500; color: {tema['text']}; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }}
+                        .title {{ font-family: 'Cinzel', serif; font-size: 52px; font-weight: 700; color: {tema['border']}; margin-bottom: 30px; letter-spacing: 1px; }}
+                        .salutation {{ font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 600; color: {tema['text']}; margin-bottom: 5px; }}
+                        .name {{ font-family: 'Alex Brush', cursive; font-size: 85px; color: {tema['border']}; margin: 0 0 25px 0; line-height: 1.1; }}
+                        .description {{ font-family: 'Montserrat', sans-serif; font-size: 16px; line-height: 1.8; color: {tema['text']}; margin: 0 auto 40px auto; max-width: 85%; }}
+                        .footer {{ display: flex; justify-content: space-between; align-items: flex-end; position: absolute; bottom: 50px; left: 70px; right: 70px; }}
+                        
+                        .signature-block, .qyvam-logo-block {{ text-align: center; width: 220px; position: relative; z-index: 10; }}
                         .sign-name {{ font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 600; color: {tema['text']}; }}
-                        .sign-title {{ font-family: 'Montserrat', sans-serif; font-size: 13px; color: {tema['text']}; margin-bottom: 35px; }}
+                        .sign-title {{ font-family: 'Montserrat', sans-serif; font-size: 13px; color: {tema['text']}; }}
+                        .sign-space {{ height: 50px; }} /* Gerçek imza için boşluk */
                         .sign-line {{ border-top: 1px solid {tema['text']}; width: 100%; margin: 0 auto; }}
                         
-                        /* Otomatik El Yazısı İmza Efekti */
-                        .auto-signature {{
-                            font-family: 'Alex Brush', cursive; font-size: 38px;
-                            color: {tema['border']}; opacity: 0.8;
-                            position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%) rotate(-5deg);
-                        }}
+                        .seal {{ position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); opacity: 0.15; width: 140px; z-index: 1; }}
                         
-                        /* Ortadaki Rozet / Mühür */
-                        .seal {{
-                            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-                            opacity: 0.15; width: 140px; z-index: 1;
-                        }}
-                        
-                        /* Qyvam Amblemi */
                         .qyvam-brand {{ font-family: 'Cinzel', serif; font-size: 26px; font-weight: 700; color: {tema['border']}; letter-spacing: 3px; margin-top: 25px; margin-bottom: 5px; }}
                         .qyvam-sub {{ font-family: 'Montserrat', sans-serif; font-size: 10px; letter-spacing: 1px; color: {tema['text']}; text-transform: uppercase; }}
                     </style>
@@ -700,21 +654,19 @@ def veli_panel_ekrani():
                                     </div>
                                     
                                     <div class="footer">
-                                        <!-- Sol Alt: Veli İmza -->
+                                        <!-- Sol Alt: Veli İmza Alanı -->
                                         <div class="signature-block">
                                             <div class="sign-name">{veli_isim}</div>
                                             <div class="sign-title">Rehber Veli</div>
-                                            <div class="auto-signature">{veli_isim}</div>
+                                            <div class="sign-space"></div>
                                             <div class="sign-line"></div>
                                         </div>
                                         
                                         <!-- Orta Alt: Kurdeleli Mühür (SVG) -->
                                         <div class="seal">
                                             <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                                                <!-- Kurdeleler -->
                                                 <path d="M35 60 L20 100 L38 90 L50 100 Z" fill="{tema['border']}"/>
                                                 <path d="M65 60 L80 100 L62 90 L50 100 Z" fill="{tema['border']}"/>
-                                                <!-- Yıldızlı Rozet -->
                                                 <path d="M50 5 L56 16 L68 15 L70 27 L82 31 L77 42 L85 51 L75 58 L77 70 L65 72 L59 82 L50 74 L41 82 L35 72 L23 70 L25 58 L15 51 L23 42 L18 31 L30 27 L32 15 L44 16 Z" fill="{tema['border']}"/>
                                                 <circle cx="50" cy="43" r="24" fill="{tema['bg']}"/>
                                                 <polygon points="50,26 56,38 69,39 59,48 62,60 50,54 38,60 41,48 31,39 44,38" fill="{tema['border']}"/>
