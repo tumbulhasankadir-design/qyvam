@@ -92,31 +92,31 @@ def cocuk_adim_guncelle(cocuk_id, yeni_adim):
 
 def cocuk_sil(cocuk_id):
     import sqlite3
-    # timeout=20 ekleyerek veritabanının "kilitli kalma" (locked) ihtimalini ortadan kaldırıyoruz
-    conn = sqlite3.connect('qyvam_veritabani.db', timeout=20)
+    conn = sqlite3.connect('qyvam_veritabani.db')
     c = conn.cursor()
     
     try:
-        # 1. Çocuğu ana listeden sil
-        # (Eğer sütun adı "id" değilse sistem çökmeyecek, hatayı bize fırlatacak)
+        # Önce tablonun gerçek yapısını (sütun isimlerini) öğrenelim (DEBUG İÇİN)
+        c.execute("PRAGMA table_info(cocuklar)")
+        columns = [info[1] for info in c.fetchall()]
+        
+        # Eğer tabloda 'id' yoksa hatayı hemen burada yakalayalım
+        if 'id' not in columns:
+            return False, f"HATA: 'cocuklar' tablosunda 'id' sütunu yok! Mevcut sütunlar: {columns}"
+
+        # 1. Çocuğu sil
         c.execute("DELETE FROM cocuklar WHERE id = ?", (cocuk_id,))
         
-        # 2. Çocuğun geçmiş işlemlerini temizle
+        # 2. İşlemleri sil
         c.execute("DELETE FROM islemler WHERE cocuk_id = ?", (cocuk_id,))
         
-        # 3. Çocuğun özel beratlarını temizle
-        c.execute('''CREATE TABLE IF NOT EXISTS ozel_beratlar 
-                     (id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                      cocuk_id INTEGER, 
-                      berat_adi TEXT, 
-                      berat_aciklama TEXT)''')
+        # 3. Beratları sil
         c.execute("DELETE FROM ozel_beratlar WHERE cocuk_id = ?", (cocuk_id,))
         
         conn.commit()
         return True, "Başarılı"
     except Exception as e:
-        # Hata olursa sistemi çökertmek yerine hatanın detayını Veli Ekranına gönderiyoruz
-        return False, str(e)
+        return False, f"SQL HATASI: {str(e)}"
     finally:
         conn.close()
     
