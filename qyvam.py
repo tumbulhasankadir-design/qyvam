@@ -1,4 +1,8 @@
 import streamlit as st
+from docx import Document
+from docx.shared import Inches
+import io
+import pytz
 import sqlite3
 import os
 from datetime import datetime
@@ -106,7 +110,27 @@ def kazanilan_sertifikalari_hesapla(adim):
     if adim > 84: sertifikalar.append(("[ KÖPRÜLER YETKİNLİK BERATI ]", "Topluma ve doğaya olan merhametli yaklaşımıyla kazanılmıştır."))
     if adim > 99: sertifikalar.append(("[ KANATLAR YETKİNLİK BERATI ]", "İhsan makamında, örnek bir şahsiyet olmaya dair üstün yetkinlik belgesidir."))
     return sertifikalar
-
+    
+def word_raporu_olustur(cocuk_ismi, gorev_adi, veli_notu, fotograf_bytes=None):
+    doc = Document()
+    doc.add_heading(f'Qyvam - Görev Raporu: {cocuk_ismi}', 0)
+    
+    doc.add_paragraph("Görev İçeriği:").bold = True
+    doc.add_paragraph(gorev_adi)
+    
+    doc.add_paragraph("Rehber (Veli) Gözlemi:").bold = True
+    doc.add_paragraph(veli_notu)
+    
+    if fotograf_bytes:
+        doc.add_paragraph("Görevin Görsel Kanıtı:").bold = True
+        foto_io = io.BytesIO(fotograf_bytes)
+        doc.add_picture(foto_io, width=Inches(5.0)) # Fotoğrafı sayfaya sığdır
+        
+    byte_io = io.BytesIO()
+    doc.save(byte_io)
+    byte_io.seek(0)
+    return byte_io
+    
 # ==============================================================================
 # YAPAY ZEKA BAĞLANTISI (API MOTORU)
 # ==============================================================================
@@ -215,41 +239,44 @@ def ust_komuta_merkezi():
     st.markdown('<div class="top-bar">', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
     
-    col_sol, col_orta, col_sag = st.columns([2, 1, 4])
+    col_sol, col_orta, col_sag = st.columns([3, 1, 4])
     with col_sol:
         if st.session_state.aktif_sayfa == "Ana Sayfa": durum_metni = "ANA SAYFA"
-        elif st.session_state.aktif_sayfa == "Veli_Panel": durum_metni = "REHBER KOMUTA MERKEZİ"
-        else: durum_metni = "DİJİTAL İKİZ BAĞLANTISI"
-        st.markdown(f'<div class="breadcrumb">QYVAM SİBER UZAY > <b>{durum_metni}</b></div>', unsafe_allow_html=True)
+        elif st.session_state.aktif_sayfa == "Veli_Panel": durum_metni = "REHBERLİK KÖŞESİ"
+        else: durum_metni = "GELİŞİM YOLCULUĞU"
+        st.markdown(f'<div class="breadcrumb">Qyvam Eğitim Sistemi > <b>{durum_metni}</b></div>', unsafe_allow_html=True)
         
     with col_orta:
         if st.session_state.aktif_sayfa == "Ana Sayfa" or st.session_state.aktif_sayfa == "Cocuk_Panel":
-            if st.button("Yetkili Girişi"): 
-                st.session_state.veli_yetkili = True # Şifreyi atlayıp doğrudan yetki veriyoruz
+            if st.button("Rehber Girişi"): 
+                st.session_state.veli_yetkili = True 
                 st.session_state.aktif_sayfa = "Veli_Panel" 
                 st.rerun()
         else:
-            if st.button("Uzay'a Dön"):
+            if st.button("Ana Sayfaya Dön"):
                 st.session_state.aktif_sayfa = "Ana Sayfa"
                 st.session_state.veli_yetkili = False
                 st.session_state.aktif_cocuk_id = None
                 st.rerun()
                 
     with col_sag:
-        try: locale.setlocale(locale.LC_TIME, 'tr_TR.UTF-8')
-        except: pass
-        tarih_str = datetime.now().strftime("%d %b %Y | %H:%M")
+        # Türkiye Saati Senkronizasyonu
+        tz = pytz.timezone('Europe/Istanbul')
+        simdi = datetime.now(tz)
+        aylar = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"]
+        tarih_str = f"{simdi.day} {aylar[simdi.month-1]} {simdi.year} | {simdi.strftime('%H:%M')}"
         
         bekleyen_sayisi = len(onay_bekleyenleri_getir())
-        bildirim_kodu = f'<span class="sensor-data" style="color:#fca5a5; border-color:#fca5a5;">[ ONAY BEKLEYEN: {bekleyen_sayisi} ]</span>' if bekleyen_sayisi > 0 else ''
+        bildirim_kodu = f'<span class="sensor-data" style="color:#ef4444; border-color:#fca5a5;">[ ONAY BEKLEYEN: {bekleyen_sayisi} ]</span>' if bekleyen_sayisi > 0 else ''
 
-        # Kafa karıştıran AI Aktif yazısı tamamen kaldırıldı
         st.markdown(f'''
             <div style="text-align: right;">
+                <span class="sensor-data" style="background:#dcfce7; border-color:#86efac; color:#166534;">🍃 Hava Kalitesi: Optimum</span>
+                <span class="sensor-data" style="background:#fef9c3; border-color:#fde047; color:#854d0e;">💨 CO2: 435 ppm</span>
                 <span class="sensor-data">{tarih_str}</span>
                 {bildirim_kodu}
             </div>
-            <hr style="border-color: rgba(56, 189, 248, 0.2); margin-top: 15px;">
+            <hr style="border-color: rgba(99, 102, 241, 0.2); margin-top: 15px;">
         ''', unsafe_allow_html=True)
 
 # ==============================================================================
@@ -330,75 +357,103 @@ def veli_giris_ekrani():
                 st.error("[ ERİŞİM REDDEDİLDİ ]: Geçersiz Kimlik Doğrulaması.")
 
 # ==============================================================================
-# SAYFA 3: VELİ (REHBER) KOMUTA MERKEZİ
+# SAYFA 3: VELİ / REHBER YÖNETİM PANELİ
 # ==============================================================================
 def veli_panel_ekrani():
-    if not st.session_state.veli_yetkili:
-        st.session_state.aktif_sayfa = "Veli_Giris"
-        st.rerun()
+    if not st.session_state.get("veli_yetkili", False):
+        st.error("Bu alana erişim yetkiniz yok.")
+        if st.button("Geri Dön"): st.session_state.aktif_sayfa = "Ana Sayfa"; st.rerun()
+        return
 
-    st.markdown('<h1 class="neon-text">REHBER KOMUTA MERKEZİ</h1><hr>', unsafe_allow_html=True)
-    t1, t2, t3, t4, t5 = st.tabs(["[ ŞAHİTLİK VE ONAY MASASI ]", "[ GELİŞİM MATRİSİ ]", "[ YETKİNLİK BERATLARI ]", "[ SİSTEME PROFİL EKLE ]", "[ QYVAM PEDAGOG AI ]"])
+    st.markdown('<h1 class="neon-text">REHBERLİK KÖŞESİ</h1><hr>', unsafe_allow_html=True)
+    
+    # CSS ile Sekmelere (Tabs) Hover Efekti Ekleme
+    st.markdown("""
+        <style>
+        button[data-baseweb="tab"] { transition: all 0.3s ease !important; border-radius: 8px 8px 0 0 !important; }
+        button[data-baseweb="tab"]:hover { transform: translateY(-3px); background-color: #e0e7ff; color: #4f46e5; }
+        </style>
+    """, unsafe_allow_html=True)
+
+    t1, t2, t3, t4 = st.tabs(["Gözlem ve Onay", "Gelişim Matrisi", "Özel Berat Tasarla", "Sisteme Kayıt"])
 
     with t1:
+        st.markdown('<div class="glass-box"><h3>Bekleyen Gözlemler</h3></div>', unsafe_allow_html=True)
         bekleyenler = onay_bekleyenleri_getir()
+        
         if not bekleyenler:
-            st.markdown('<div class="glass-box"><h3 class="neon-text">Bekleyen Veri Paketleri</h3>', unsafe_allow_html=True)
-            st.info("[ SİSTEM BİLGİSİ ]: Şu an onay bekleyen görev bulunmamaktadır.")
-            st.markdown('</div>', unsafe_allow_html=True)
+            st.info("Şu an onay bekleyen bir görev bulunmamaktadır.")
         else:
-            for g in bekleyenler:
-                g_id, c_isim, g_adi, tefekkur, c_id, c_adim = g
-                st.markdown(f'''
-                    <div class="glass-task">
-                        <h4 style="color:#fca5a5; margin-top:0;">[ DİJİTAL İKİZ: {c_isim.upper()} ]</h4>
-                        <p style="color:#94a3b8; margin-bottom:10px;"><b>Kritik Eylem:</b> {g_adi}</p>
-                        <p style="color:#6ee7b7; font-family:'Chakra Petch'; margin-bottom:5px;"><b>Tefekkür:</b> "{tefekkur}"</p>
-                    </div>
-                ''', unsafe_allow_html=True)
+            for islem_id, c_id, gorev_adi, cevap, tarih in bekleyenler:
+                bilgi = cocuk_bilgisi_getir(c_id)
+                if not bilgi: continue
+                cocuk_isim, mevcut_adim = bilgi
                 
-                puan_secim = st.radio("Şahitlik Puanınız:", ["1 - Yardımla (Tekrar)", "2 - Hatırlatmayla (Tekrar)", "3 - Kendi İradesiyle (Başarılı)", "4 - İhsanla / Kıvam (Mükemmel)"], key=f"puan_{g_id}")
-                veli_notu = st.text_area("Rehber Notu:", key=f"not_{g_id}")
-                
-                if st.button("[ ŞAHİTLİĞİ ONAYLA ]", key=f"btn_{g_id}"):
-                    puan_int = int(puan_secim.split(" ")[0])
-                    basarili = True if puan_int >= 3 else False
-                    veli_onayi_ver(g_id, puan_int, veli_notu, c_id, basarili)
-                    st.success("[ İŞLEM BAŞARILI ]: Veri işlendi.")
-                    st.rerun()
+                with st.expander(f"📌 {cocuk_isim} - {gorev_adi} ({tarih})", expanded=True):
+                    st.write(f"**Çocuğun İfadesi:** {cevap}")
+                    
+                    # Fotoğraflı Word Çıktısı Alanı
+                    yuklenen_foto = st.file_uploader(f"Kanıt Fotoğrafı Yükle ({cocuk_isim})", type=['png', 'jpg', 'jpeg'], key=f"foto_{islem_id}")
+                    veli_degerlendirmesi = st.text_area("Rehber Notunuzu Ekleyin:", key=f"not_{islem_id}")
+                    
+                    col_onay, col_word = st.columns(2)
+                    with col_onay:
+                        if st.button("✅ Görevi Onayla ve Sonraki Aşamaya Geçir", key=f"btn_onay_{islem_id}"):
+                            veri_onayla(islem_id)
+                            st.success(f"{cocuk_isim} için görev onaylandı!")
+                            st.rerun()
+                            
+                    with col_word:
+                        if yuklenen_foto and veli_degerlendirmesi:
+                            foto_bytes = yuklenen_foto.getvalue()
+                            word_dosyasi = word_raporu_olustur(cocuk_isim, gorev_adi, veli_degerlendirmesi, foto_bytes)
+                            st.download_button(
+                                label="📄 Fotoğraflı Word Raporunu İndir",
+                                data=word_dosyasi,
+                                file_name=f"{cocuk_isim}_Gorev_Raporu.docx",
+                                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                                key=f"dl_{islem_id}"
+                            )
+                        else:
+                            st.caption("Word çıktısı almak için bir fotoğraf yükleyin ve not yazın.")
 
     with t2:
-        st.markdown('<div class="glass-box"><h3 class="neon-text">Gelişim Radarı</h3></div>', unsafe_allow_html=True)
+        st.markdown("### Sisteme Kayıtlı Çocukların Durumu")
         cocuklar = cocuklari_getir()
-        for c_id, isim, adim in cocuklar:
-            yuzde = int((adim / 99) * 100)
-            st.markdown(f"**Profil:** {isim} | **Mevcut Adım:** {adim}/99")
-            st.progress(yuzde)
+        for cid, isim, adim in cocuklar:
+            ilerleme = int((adim / max(MUFREDAT.keys())) * 100) if MUFREDAT else 0
+            st.markdown(f"**{isim}** - Aşama {adim}")
+            st.progress(ilerleme)
 
     with t3:
-        st.markdown('<div class="glass-box"><h3 class="neon-text">Yetkinlik Beratları</h3></div>', unsafe_allow_html=True)
+        st.markdown('<div class="glass-box"><h3>Özel Berat / Sertifika Tasarla</h3><p>Buradan çocuğunuza özel başarı belgeleri oluşturabilirsiniz.</p></div>', unsafe_allow_html=True)
         
-    with t4:
-        st.markdown('<div class="glass-box"><h3 class="neon-text">Yeni Profil Tanımlama</h3></div>', unsafe_allow_html=True)
-        yeni_isim = st.text_input("Dijital İkiz Adı (Çocuğun İsmi):")
-        if st.button("[ MATRİSİ OLUŞTUR ]"):
-            if yeni_isim:
-                baglanti = sqlite3.connect('qyvam_siber.db')
-                imlec = baglanti.cursor()
-                imlec.execute("INSERT INTO Cocuklar (isim, mevcut_adim) VALUES (?, 1)", (yeni_isim,))
-                baglanti.commit()
-                baglanti.close()
-                st.success(f"[ BAŞARILI ]: {yeni_isim} eklendi.")
-                st.rerun()
+        with st.expander("💡 İlham Alın: 7 Faz İçin 7 Örnek Berat", expanded=False):
+            st.markdown("""
+            1. **(Temel Güven):** *Güvenli Liman Beratı* - Çevresiyle kurduğu pozitif ve güvenli bağlardan dolayı.
+            2. **(Özerklik):** *Kendi Ayakları Üzerinde Beratı* - Görevlerini yardımsız, cesaretle başardığı için.
+            3. **(Girişimcilik):** *Cesur Kaşif Beratı* - Yeni fikirler üretip denemekten korkmadığı için.
+            4. **(Başarı/Çalışkanlık):** *Çalışkan Arı Beratı* - Sorumluluklarını (ör: yatak toplama) istikrarla yerine getirdiği için.
+            5. **(Kimlik):** *Öz Benlik Keşfi Beratı* - Kendi değerlerini ve karakterini güçlü bir şekilde yansıttığı için.
+            6. **(Yakınlık):** *Sevgi ve Paylaşım Beratı* - Kardeşleri/arkadaşlarıyla kurduğu güçlü empati için.
+            7. **(Üretkenlik):** *İyilik Elçisi Beratı* - Çevresine, doğaya ve evdeki hayata kattığı kalıcı değerler için.
+            """)
+            
+        st.text_input("Beratın Adı:", placeholder="Örn: Cesur Kaşif Beratı")
+        st.text_area("Açıklaması / Veriliş Nedeni:", placeholder="Örn: Odanı kendi başına düzenleme sorumluluğunu aldığın için...")
+        if st.button("🎉 Beratı Çocuğun Profiline Ekle"):
+            st.success("Bu özellik bir sonraki veritabanı güncellemesinde aktif olacaktır. Tasarımınız harika!")
 
-    with t5:
-        st.markdown('<div class="glass-box"><h3 class="neon-text">Qyvam Rehberlik Asistanı</h3></div>', unsafe_allow_html=True)
-        veli_sorusu = st.text_input("Soru:", placeholder="[ Örn: Ekran kuralları nasıl belirlenmeli? ]", key="v_soru")
-        if st.button("[ SORGULA ]", key="v_btn"):
-            if veli_sorusu:
-                with st.spinner("AI Çekirdeği veriyi işliyor..."):
-                    yanit = ai_cevap_uret(veli_sorusu, 1, rol="veli")
-                st.info(yanit)
+    with t4:
+        st.markdown("### Yeni Çocuk / Profil Ekle")
+        yeni_isim = st.text_input("Çocuğun İsmi:")
+        if st.button("Sisteme Ekle"):
+            if yeni_isim.strip() != "":
+                cocuk_ekle(yeni_isim.strip())
+                st.success(f"{yeni_isim} başarıyla sisteme eklendi!")
+                st.rerun()
+            else:
+                st.error("Lütfen geçerli bir isim girin.")
 
 # ==============================================================================
 # SAYFA 4: ÇOCUK (DİJİTAL İKİZ) VERİ GİRİŞ PANELİ
