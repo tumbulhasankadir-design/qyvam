@@ -384,7 +384,15 @@ def veli_panel_ekrani():
         if not bekleyenler:
             st.info("Şu an onay bekleyen bir görev bulunmamaktadır.")
         else:
-            for islem_id, c_id, gorev_adi, cevap, tarih in bekleyenler:
+            for kayit in bekleyenler:
+                # ZIRHLI VERİ OKUMA: Veritabanı kaç sütun gönderirse göndersin çökmez
+                islem_id = kayit[0]
+                c_id = kayit[1]
+                gorev_adi = kayit[2]
+                cevap = kayit[3]
+                # Eğer veritabanında tarih sütunu varsa en sondakini al, yoksa "Tarih Yok" yaz
+                tarih = kayit[-1] if len(kayit) > 4 else "Tarih Yok"
+                
                 bilgi = cocuk_bilgisi_getir(c_id)
                 if not bilgi: continue
                 cocuk_isim, mevcut_adim = bilgi
@@ -415,7 +423,7 @@ def veli_panel_ekrani():
                             )
                         else:
                             st.caption("Word çıktısı almak için fotoğraf yükleyip not yazın.")
-
+                            
     with t2:
         st.markdown('<div class="glass-box"><h3>Serbest Fotoğraflı Rapor Al</h3><p style="color:#64748b;">Çocuğun onay göndermesini beklemeden, dilediğiniz zaman bir faaliyeti (örn: yatağını toplamasını) Word olarak belgeleyin.</p></div>', unsafe_allow_html=True)
         cocuklar = cocuklari_getir()
