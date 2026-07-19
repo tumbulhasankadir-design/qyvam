@@ -406,7 +406,6 @@ def veli_panel_ekrani():
         </style>
     """, unsafe_allow_html=True)
 
-    # Sekmeleri 6'ya çıkardık: Serbest Rapor ve AI Pedagog eklendi!
     t1, t2, t3, t4, t5, t6 = st.tabs(["Gözlem ve Onay", "Serbest Rapor (Word)", "Gelişim Matrisi", "Özel Berat Tasarla", "Sisteme Kayıt", "Qyvam AI Pedagog"])
 
     with t1:
@@ -417,12 +416,10 @@ def veli_panel_ekrani():
             st.info("Şu an onay bekleyen bir görev bulunmamaktadır.")
         else:
             for kayit in bekleyenler:
-                # ZIRHLI VERİ OKUMA: Veritabanı kaç sütun gönderirse göndersin çökmez
                 islem_id = kayit[0]
                 c_id = kayit[1]
                 gorev_adi = kayit[2]
                 cevap = kayit[3]
-                # Eğer veritabanında tarih sütunu varsa en sondakini al, yoksa "Tarih Yok" yaz
                 tarih = kayit[-1] if len(kayit) > 4 else "Tarih Yok"
                 
                 bilgi = cocuk_bilgisi_getir(c_id)
@@ -455,26 +452,28 @@ def veli_panel_ekrani():
                             )
                         else:
                             st.caption("Word çıktısı almak için fotoğraf yükleyip not yazın.")
-                            
-   with t2:
-        st.markdown('<div class="glass-box"><h3>Kazandığın Başarı Beratları</h3></div>', unsafe_allow_html=True)
-        
-        # ZIRH EKLENDİ: "or []" diyerek eğer berat yoksa sistemi çökertmek yerine boş liste saydırıyoruz
-        sertifikalar = kazanilan_sertifikalari_hesapla(mevcut_adim) or []
-        ozel_sertifikalar = ozel_beratlari_getir(st.session_state.aktif_cocuk_id) or []
-        
-        tum_sertifikalar = sertifikalar + ozel_sertifikalar
-        
-        if not tum_sertifikalar:
-            st.info("Henüz bir berat kazanmadın. Görevleri tamamladıkça burası dolacak!")
+
+    with t2:
+        st.markdown('<div class="glass-box"><h3>Serbest Fotoğraflı Rapor Al</h3><p style="color:#64748b;">Çocuğun onay göndermesini beklemeden, dilediğiniz zaman bir faaliyeti Word olarak belgeleyin.</p></div>', unsafe_allow_html=True)
+        cocuklar = cocuklari_getir()
+        if not cocuklar:
+            st.warning("Önce 'Sisteme Kayıt' sekmesinden bir çocuk eklemelisiniz.")
         else:
-            for s_adi, s_aciklama in tum_sertifikalar:
-                st.markdown(f'''
-                <div class="glass-task">
-                    <h3 style="margin-top:0; color:#db2777;">🏆 {s_adi}</h3>
-                    <p style="color:#475569; margin-bottom:0; font-size:1.1rem; font-weight:600;">{s_aciklama}</p>
-                </div>
-                ''', unsafe_allow_html=True)
+            secilen_cocuk = st.selectbox("Raporlanacak Çocuğu Seçin:", [c[1] for c in cocuklar])
+            serbest_gorev_adi = st.text_input("Faaliyet/Görev Adı:", placeholder="Örn: Kendi Yatağını Toplama")
+            serbest_veli_notu = st.text_area("Gözlem Notunuz:", placeholder="Bugün yatağını çok güzel topladı ve odasını havalandırdı...")
+            serbest_foto = st.file_uploader("Görsel Kanıt Yükle:", type=['png', 'jpg', 'jpeg'], key="serbest_foto")
+            
+            if serbest_foto and serbest_veli_notu and serbest_gorev_adi:
+                foto_b = serbest_foto.getvalue()
+                s_word_dosyasi = word_raporu_olustur(secilen_cocuk, serbest_gorev_adi, serbest_veli_notu, foto_b)
+                st.download_button(
+                    label="📄 Serbest Raporu Word Olarak İndir",
+                    data=s_word_dosyasi,
+                    file_name=f"{secilen_cocuk}_Serbest_Rapor.docx",
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    key="dl_serbest"
+                )
 
     with t3:
         st.markdown('<div class="glass-box"><h3>Gelişim Matrisi</h3></div>', unsafe_allow_html=True)
@@ -518,7 +517,6 @@ def veli_panel_ekrani():
         if st.button("🤖 Danış"):
             if veli_sorusu:
                 with st.spinner("Qyvam Pedagog analiz ediyor..."):
-                    # Sistem mevcut bir çocuğu baz alır
                     yanit = ai_cevap_uret(veli_sorusu, 1, rol="veli")
                 st.info(yanit)
 
