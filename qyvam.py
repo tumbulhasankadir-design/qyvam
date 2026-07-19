@@ -367,7 +367,6 @@ def veli_panel_ekrani():
 
     st.markdown('<h1 class="neon-text">REHBERLİK KÖŞESİ</h1><hr>', unsafe_allow_html=True)
     
-    # CSS ile Sekmelere (Tabs) Hover Efekti Ekleme
     st.markdown("""
         <style>
         button[data-baseweb="tab"] { transition: all 0.3s ease !important; border-radius: 8px 8px 0 0 !important; }
@@ -375,10 +374,11 @@ def veli_panel_ekrani():
         </style>
     """, unsafe_allow_html=True)
 
-    t1, t2, t3, t4 = st.tabs(["Gözlem ve Onay", "Gelişim Matrisi", "Özel Berat Tasarla", "Sisteme Kayıt"])
+    # Sekmeleri 6'ya çıkardık: Serbest Rapor ve AI Pedagog eklendi!
+    t1, t2, t3, t4, t5, t6 = st.tabs(["Gözlem ve Onay", "Serbest Rapor (Word)", "Gelişim Matrisi", "Özel Berat Tasarla", "Sisteme Kayıt", "Qyvam AI Pedagog"])
 
     with t1:
-        st.markdown('<div class="glass-box"><h3>Bekleyen Gözlemler</h3></div>', unsafe_allow_html=True)
+        st.markdown('<div class="glass-box"><h3>Bekleyen Gözlemler</h3><p style="color:#64748b;">Çocukların gönderdiği görevleri buradan onaylayıp onlara Word raporu oluşturabilirsiniz.</p></div>', unsafe_allow_html=True)
         bekleyenler = onay_bekleyenleri_getir()
         
         if not bekleyenler:
@@ -392,13 +392,12 @@ def veli_panel_ekrani():
                 with st.expander(f"📌 {cocuk_isim} - {gorev_adi} ({tarih})", expanded=True):
                     st.write(f"**Çocuğun İfadesi:** {cevap}")
                     
-                    # Fotoğraflı Word Çıktısı Alanı
                     yuklenen_foto = st.file_uploader(f"Kanıt Fotoğrafı Yükle ({cocuk_isim})", type=['png', 'jpg', 'jpeg'], key=f"foto_{islem_id}")
                     veli_degerlendirmesi = st.text_area("Rehber Notunuzu Ekleyin:", key=f"not_{islem_id}")
                     
                     col_onay, col_word = st.columns(2)
                     with col_onay:
-                        if st.button("✅ Görevi Onayla ve Sonraki Aşamaya Geçir", key=f"btn_onay_{islem_id}"):
+                        if st.button("✅ Görevi Onayla", key=f"btn_onay_{islem_id}"):
                             veri_onayla(islem_id)
                             st.success(f"{cocuk_isim} için görev onaylandı!")
                             st.rerun()
@@ -415,45 +414,73 @@ def veli_panel_ekrani():
                                 key=f"dl_{islem_id}"
                             )
                         else:
-                            st.caption("Word çıktısı almak için bir fotoğraf yükleyin ve not yazın.")
+                            st.caption("Word çıktısı almak için fotoğraf yükleyip not yazın.")
 
     with t2:
-        st.markdown("### Sisteme Kayıtlı Çocukların Durumu")
+        st.markdown('<div class="glass-box"><h3>Serbest Fotoğraflı Rapor Al</h3><p style="color:#64748b;">Çocuğun onay göndermesini beklemeden, dilediğiniz zaman bir faaliyeti (örn: yatağını toplamasını) Word olarak belgeleyin.</p></div>', unsafe_allow_html=True)
+        cocuklar = cocuklari_getir()
+        if not cocuklar:
+            st.warning("Önce 'Sisteme Kayıt' sekmesinden bir çocuk eklemelisiniz.")
+        else:
+            secilen_cocuk = st.selectbox("Raporlanacak Çocuğu Seçin:", [c[1] for c in cocuklar])
+            serbest_gorev_adi = st.text_input("Faaliyet/Görev Adı:", placeholder="Örn: Kendi Yatağını Toplama")
+            serbest_veli_notu = st.text_area("Gözlem Notunuz:", placeholder="Bugün yatağını çok güzel topladı ve odasını havalandırdı...")
+            serbest_foto = st.file_uploader("Görsel Kanıt Yükle:", type=['png', 'jpg', 'jpeg'], key="serbest_foto")
+            
+            if serbest_foto and serbest_veli_notu and serbest_gorev_adi:
+                foto_b = serbest_foto.getvalue()
+                s_word_dosyasi = word_raporu_olustur(secilen_cocuk, serbest_gorev_adi, serbest_veli_notu, foto_b)
+                st.download_button(
+                    label="📄 Serbest Raporu Word Olarak İndir",
+                    data=s_word_dosyasi,
+                    file_name=f"{secilen_cocuk}_Serbest_Rapor.docx",
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    key="dl_serbest"
+                )
+
+    with t3:
+        st.markdown('<div class="glass-box"><h3>Gelişim Matrisi</h3></div>', unsafe_allow_html=True)
         cocuklar = cocuklari_getir()
         for cid, isim, adim in cocuklar:
             ilerleme = int((adim / max(MUFREDAT.keys())) * 100) if MUFREDAT else 0
             st.markdown(f"**{isim}** - Aşama {adim}")
             st.progress(ilerleme)
 
-    with t3:
-        st.markdown('<div class="glass-box"><h3>Özel Berat / Sertifika Tasarla</h3><p>Buradan çocuğunuza özel başarı belgeleri oluşturabilirsiniz.</p></div>', unsafe_allow_html=True)
-        
+    with t4:
+        st.markdown('<div class="glass-box"><h3>Özel Berat / Sertifika Tasarla</h3></div>', unsafe_allow_html=True)
         with st.expander("💡 İlham Alın: 7 Faz İçin 7 Örnek Berat", expanded=False):
             st.markdown("""
-            1. **(Temel Güven):** *Güvenli Liman Beratı* - Çevresiyle kurduğu pozitif ve güvenli bağlardan dolayı.
-            2. **(Özerklik):** *Kendi Ayakları Üzerinde Beratı* - Görevlerini yardımsız, cesaretle başardığı için.
-            3. **(Girişimcilik):** *Cesur Kaşif Beratı* - Yeni fikirler üretip denemekten korkmadığı için.
-            4. **(Başarı/Çalışkanlık):** *Çalışkan Arı Beratı* - Sorumluluklarını (ör: yatak toplama) istikrarla yerine getirdiği için.
-            5. **(Kimlik):** *Öz Benlik Keşfi Beratı* - Kendi değerlerini ve karakterini güçlü bir şekilde yansıttığı için.
-            6. **(Yakınlık):** *Sevgi ve Paylaşım Beratı* - Kardeşleri/arkadaşlarıyla kurduğu güçlü empati için.
-            7. **(Üretkenlik):** *İyilik Elçisi Beratı* - Çevresine, doğaya ve evdeki hayata kattığı kalıcı değerler için.
+            1. **(Temel Güven):** *Güvenli Liman Beratı* - Çevresiyle kurduğu pozitif ve güvenli bağlardan.
+            2. **(Özerklik):** *Kendi Ayakları Üzerinde Beratı* - Görevlerini yardımsız başardığı için.
+            3. **(Girişimcilik):** *Cesur Kaşif Beratı* - Yeni fikirler denemekten korkmadığı için.
+            4. **(Başarı/Çalışkanlık):** *Çalışkan Arı Beratı* - Sorumluluklarını istikrarla yerine getirdiği için.
+            5. **(Kimlik):** *Öz Benlik Keşfi Beratı* - Kendi değerlerini güçlü yansıttığı için.
+            6. **(Yakınlık):** *Sevgi ve Paylaşım Beratı* - Kurduğu güçlü empati için.
+            7. **(Üretkenlik):** *İyilik Elçisi Beratı* - Çevresine kattığı kalıcı değerler için.
             """)
-            
         st.text_input("Beratın Adı:", placeholder="Örn: Cesur Kaşif Beratı")
-        st.text_area("Açıklaması / Veriliş Nedeni:", placeholder="Örn: Odanı kendi başına düzenleme sorumluluğunu aldığın için...")
+        st.text_area("Açıklaması / Veriliş Nedeni:")
         if st.button("🎉 Beratı Çocuğun Profiline Ekle"):
-            st.success("Bu özellik bir sonraki veritabanı güncellemesinde aktif olacaktır. Tasarımınız harika!")
+            st.success("Tasarımınız hazır! Bu özellik veri tabanı güncellemesiyle aktif olacaktır.")
 
-    with t4:
-        st.markdown("### Yeni Çocuk / Profil Ekle")
+    with t5:
+        st.markdown('<div class="glass-box"><h3>Yeni Kayıt</h3></div>', unsafe_allow_html=True)
         yeni_isim = st.text_input("Çocuğun İsmi:")
         if st.button("Sisteme Ekle"):
             if yeni_isim.strip() != "":
                 cocuk_ekle(yeni_isim.strip())
-                st.success(f"{yeni_isim} başarıyla sisteme eklendi!")
+                st.success(f"{yeni_isim} başarıyla eklendi!")
                 st.rerun()
-            else:
-                st.error("Lütfen geçerli bir isim girin.")
+
+    with t6:
+        st.markdown('<div class="glass-box"><h3>Qyvam AI Pedagog</h3><p style="color:#64748b;">Rehberlik sürecinde yapay zekaya danışın. Eğitim tavsiyeleri alın.</p></div>', unsafe_allow_html=True)
+        veli_sorusu = st.text_area("Pedagojik Danışmanınıza Sorun:", placeholder="Örn: Çocuğum bu aşamada ödev yapmak istemiyor, nasıl bir dil kullanmalıyım?")
+        if st.button("🤖 Danış"):
+            if veli_sorusu:
+                with st.spinner("Qyvam Pedagog analiz ediyor..."):
+                    # Sistem mevcut bir çocuğu baz alır
+                    yanit = ai_cevap_uret(veli_sorusu, 1, rol="veli")
+                st.info(yanit)
 
 # ==============================================================================
 # SAYFA 4: ÇOCUK (DİJİTAL İKİZ) VERİ GİRİŞ PANELİ
