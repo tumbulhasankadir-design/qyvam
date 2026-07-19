@@ -37,33 +37,20 @@ except ImportError:
 # ==============================================================================
 # VERİTABANI MOTORU
 # ==============================================================================
-def veritabani_hazirla():
-    baglanti = sqlite3.connect('qyvam_siber.db')
-    imlec = baglanti.cursor()
-    imlec.execute('CREATE TABLE IF NOT EXISTS Cocuklar (id INTEGER PRIMARY KEY AUTOINCREMENT, isim TEXT, mevcut_adim INTEGER)')
-    imlec.execute('CREATE TABLE IF NOT EXISTS Gorevler (id INTEGER PRIMARY KEY AUTOINCREMENT, cocuk_id INTEGER, gorev_adi TEXT, tefekkur TEXT, durum TEXT, puan INTEGER, veli_notu TEXT, tarih TIMESTAMP DEFAULT CURRENT_TIMESTAMP)')
-    baglanti.commit()
-    baglanti.close()
-
-veritabani_hazirla()
+def veritabani_baglanti():
+    return sqlite3.connect('qyvam_veritabani.db')
 
 # ==============================================================================
 # ÇOCUK EKLEME FONKSİYONU
 # ==============================================================================
 def cocuk_ekle(isim):
-    import sqlite3
-    conn = sqlite3.connect('qyvam_veritabani.db')
+    conn = veritabani_baglanti()
     c = conn.cursor()
-    # Eğer cocuklar tablosu yoksa önce onu oluşturalım (Güvenlik önlemi)
-    c.execute('''CREATE TABLE IF NOT EXISTS cocuklar 
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                  isim TEXT, 
-                  mevcut_adim INTEGER)''')
-    # Şimdi ismi kaydedelim
+    c.execute('''CREATE TABLE IF NOT EXISTS cocuklar (id INTEGER PRIMARY KEY AUTOINCREMENT, isim TEXT, mevcut_adim INTEGER)''')
     c.execute("INSERT INTO cocuklar (isim, mevcut_adim) VALUES (?, ?)", (isim, 1))
     conn.commit()
     conn.close()
-
+    
 # ==============================================================================
 # ÖZEL BERAT VERİTABANI İŞLEMLERİ
 # ==============================================================================
@@ -91,34 +78,13 @@ def cocuk_adim_guncelle(cocuk_id, yeni_adim):
     conn.close()
 
 def cocuk_sil(cocuk_id):
-    import sqlite3
-    conn = sqlite3.connect('qyvam_veritabani.db')
+    conn = veritabani_baglanti()
     c = conn.cursor()
-    
-    try:
-        # Önce tablonun gerçek yapısını (sütun isimlerini) öğrenelim (DEBUG İÇİN)
-        c.execute("PRAGMA table_info(cocuklar)")
-        columns = [info[1] for info in c.fetchall()]
-        
-        # Eğer tabloda 'id' yoksa hatayı hemen burada yakalayalım
-        if 'id' not in columns:
-            return False, f"HATA: 'cocuklar' tablosunda 'id' sütunu yok! Mevcut sütunlar: {columns}"
-
-        # 1. Çocuğu sil
-        c.execute("DELETE FROM cocuklar WHERE id = ?", (cocuk_id,))
-        
-        # 2. İşlemleri sil
-        c.execute("DELETE FROM islemler WHERE cocuk_id = ?", (cocuk_id,))
-        
-        # 3. Beratları sil
-        c.execute("DELETE FROM ozel_beratlar WHERE cocuk_id = ?", (cocuk_id,))
-        
-        conn.commit()
-        return True, "Başarılı"
-    except Exception as e:
-        return False, f"SQL HATASI: {str(e)}"
-    finally:
-        conn.close()
+    c.execute("DELETE FROM cocuklar WHERE id = ?", (cocuk_id,))
+    c.execute("DELETE FROM islemler WHERE cocuk_id = ?", (cocuk_id,))
+    c.execute("DELETE FROM ozel_beratlar WHERE cocuk_id = ?", (cocuk_id,))
+    conn.commit()
+    conn.close()
     
 def ozel_beratlari_getir(cocuk_id):
     import sqlite3
@@ -135,12 +101,12 @@ def ozel_beratlari_getir(cocuk_id):
     return veriler
               
 def cocuklari_getir():
-    baglanti = sqlite3.connect('qyvam_siber.db')
-    imlec = baglanti.cursor()
-    imlec.execute('SELECT id, isim, mevcut_adim FROM Cocuklar')
-    liste = imlec.fetchall()
-    baglanti.close()
-    return liste
+    conn = veritabani_baglanti()
+    c = conn.cursor()
+    c.execute("SELECT id, isim, mevcut_adim FROM cocuklar")
+    data = c.fetchall()
+    conn.close()
+    return data
 
 def cocuk_bilgisi_getir(cocuk_id):
     baglanti = sqlite3.connect('qyvam_siber.db')
