@@ -125,12 +125,7 @@ def ai_cevap_uret(soru, mevcut_adim, rol="veli", cocuk_isim=""):
         prompt = f"Senin adın Qyman. Zeki, siber fütüristik bir dijital ikiz rehberisin. Karşındaki arkadaşının adı {cocuk_isim}. Cümlelerin kısa, cesaretlendirici olsun. Emojileri asla kullanma. Gelişim aşaması: {faz}. Soru: {soru}"
 
     ucretsiz_modeller = [
-        "qwen/qwen-2-7b-instruct:free",
-        "microsoft/phi-3-mini-128k-instruct:free",
-        "huggingfaceh4/zephyr-7b-beta:free",
-        "openchat/openchat-7b:free",
-        "mistralai/mistral-7b-instruct:free",
-        "google/gemma-2-9b-it:free"
+        "deepseek/deepseek-v4-flash"
     ]
 
     try:
