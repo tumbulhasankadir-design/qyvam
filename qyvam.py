@@ -64,7 +64,15 @@ def ozel_berat_ekle(cocuk_id, berat_adi, berat_aciklama):
               (cocuk_id, berat_adi, berat_aciklama))
     conn.commit()
     conn.close()
-
+    
+def cocuk_adim_guncelle(cocuk_id, yeni_adim):
+    import sqlite3
+    conn = sqlite3.connect('qyvam_veritabani.db')
+    c = conn.cursor()
+    c.execute("UPDATE cocuklar SET mevcut_adim = ? WHERE id = ?", (yeni_adim, cocuk_id))
+    conn.commit()
+    conn.close()
+    
 def ozel_beratlari_getir(cocuk_id):
     import sqlite3
     conn = sqlite3.connect('qyvam_veritabani.db')
@@ -476,12 +484,43 @@ def veli_panel_ekrani():
                 )
 
     with t3:
-        st.markdown('<div class="glass-box"><h3>Gelişim Matrisi</h3></div>', unsafe_allow_html=True)
+        st.markdown('<div class="glass-box"><h3>Gelişim Matrisi ve Görev Atama</h3><p style="color:#64748b;">Çocukların ilerleyişini takip edebilir ve müfredattaki seviyeleri manuel olarak atayabilirsiniz.</p></div>', unsafe_allow_html=True)
+        
         cocuklar = cocuklari_getir()
+        
+        # --- 1. KISIM: MEVCUT DURUM ---
+        st.markdown("#### 📊 Mevcut İlerleme Durumları")
         for cid, isim, adim in cocuklar:
             ilerleme = int((adim / max(MUFREDAT.keys())) * 100) if MUFREDAT else 0
-            st.markdown(f"**{isim}** - Aşama {adim}")
+            st.markdown(f"**{isim}** - Aşama {adim} ({ilerleme}%)")
             st.progress(ilerleme)
+            
+        st.markdown("<hr style='border-color: #e2e8f0;'>", unsafe_allow_html=True)
+        
+        # --- 2. KISIM: MANUEL GÖREV ATAMA ---
+        st.markdown("#### 🎯 Yeni Görev / Aşama Ata")
+        if not cocuklar:
+            st.warning("Önce sisteme bir çocuk eklemelisiniz.")
+        else:
+            col_cocuk, col_gorev = st.columns(2)
+            with col_cocuk:
+                secilen_cocuk_isim_g = st.selectbox("Görev Atanacak Çocuk:", [c[1] for c in cocuklar], key="g_ata_isim")
+                secilen_id_g = next(c[0] for c in cocuklar if c[1] == secilen_cocuk_isim_g)
+                
+            with col_gorev:
+                # Müfredattaki tüm faz ve seviyeleri listeleme
+                mufredat_secenekleri = [f"Adım {a}: {i['faz']} ➔ {i['alt_seviye']}" for a, i in MUFREDAT.items()]
+                secilen_mufredat_metin = st.selectbox("Atanacak Aşama:", mufredat_secenekleri)
+                yeni_adim_no = int(secilen_mufredat_metin.split(":")[0].replace("Adım ", ""))
+                
+            # Seçilen görevin Veliye Önizlemesi (Ne atadığını görmesi için)
+            secilen_icerik = MUFREDAT[yeni_adim_no]
+            st.info(f"**📌 Çocuğa Gidecek Görev:** {secilen_icerik['varsayilan_gorev']}\n\n**🤔 Tefekkür Sorusu:** {secilen_icerik['varsayilan_tefekkur']}")
+            
+            if st.button("🚀 Bu Görevi Çocuğa Ata"):
+                cocuk_adim_guncelle(secilen_id_g, yeni_adim_no)
+                st.success(f"Harika! '{secilen_cocuk_isim_g}' artık Adım {yeni_adim_no} seviyesinde. Çocuk paneline girdiğinde bu yeni görevi görecek.")
+                st.rerun()
 
     with t4:
         st.markdown('<div class="glass-box"><h3>Özel Berat / Sertifika Tasarla</h3><p style="color:#64748b;">Oluşturduğunuz berat doğrudan çocuğun dijital profiline kaydedilir.</p></div>', unsafe_allow_html=True)
