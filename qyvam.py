@@ -72,6 +72,25 @@ def cocuk_adim_guncelle(cocuk_id, yeni_adim):
     c.execute("UPDATE cocuklar SET mevcut_adim = ? WHERE id = ?", (yeni_adim, cocuk_id))
     conn.commit()
     conn.close()
+
+def cocuk_sil(cocuk_id):
+    import sqlite3
+    conn = sqlite3.connect('qyvam_veritabani.db')
+    c = conn.cursor()
+    # 1. Çocuğu ana listeden sil
+    c.execute("DELETE FROM cocuklar WHERE id = ?", (cocuk_id,))
+    # 2. Çocuğun geçmiş işlemlerini/görevlerini temizle
+    c.execute("DELETE FROM islemler WHERE cocuk_id = ?", (cocuk_id,))
+    # 3. Çocuğun özel beratlarını temizle
+    c.execute('''CREATE TABLE IF NOT EXISTS ozel_beratlar 
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                  cocuk_id INTEGER, 
+                  berat_adi TEXT, 
+                  berat_aciklama TEXT)''')
+    c.execute("DELETE FROM ozel_beratlar WHERE cocuk_id = ?", (cocuk_id,))
+    
+    conn.commit()
+    conn.close()
     
 def ozel_beratlari_getir(cocuk_id):
     import sqlite3
@@ -542,13 +561,41 @@ def veli_panel_ekrani():
                     st.error("Lütfen berat adını ve açıklamasını boş bırakmayın.")
 
     with t5:
-        st.markdown('<div class="glass-box"><h3>Yeni Kayıt</h3></div>', unsafe_allow_html=True)
-        yeni_isim = st.text_input("Çocuğun İsmi:")
-        if st.button("Sisteme Ekle"):
-            if yeni_isim.strip() != "":
-                cocuk_ekle(yeni_isim.strip())
-                st.success(f"{yeni_isim} başarıyla eklendi!")
-                st.rerun()
+        st.markdown('<div class="glass-box"><h3>Sistem Kayıt Yönetimi</h3><p style="color:#64748b;">Yeni profil ekleyebilir veya mevcut profilleri sistemden tamamen silebilirsiniz.</p></div>', unsafe_allow_html=True)
+        
+        col_ekle, col_cikar = st.columns(2)
+        
+        with col_ekle:
+            st.markdown("#### ➕ Yeni Profil Ekle")
+            yeni_isim = st.text_input("Çocuğun İsmi:")
+            if st.button("Sisteme Ekle"):
+                if yeni_isim.strip() != "":
+                    cocuk_ekle(yeni_isim.strip())
+                    st.success(f"{yeni_isim} başarıyla eklendi!")
+                    st.rerun()
+                else:
+                    st.error("Lütfen geçerli bir isim girin.")
+                    
+        with col_cikar:
+            st.markdown("#### 🗑️ Profil Sil (Çıkar)")
+            cocuklar = cocuklari_getir()
+            if not cocuklar:
+                st.info("Sistemde silinecek kayıt yok.")
+            else:
+                silinecek_isim = st.selectbox("Silinecek Çocuğu Seçin:", [c[1] for c in cocuklar])
+                silinecek_id = next(c[0] for c in cocuklar if c[1] == silinecek_isim)
+                
+                st.warning("⚠️ Dikkat: Bu işlem çocuğun tüm geçmişini ve beratlarını da silecektir.")
+                if st.button("❌ Seçili Profili Tamamen Sil"):
+                    cocuk_sil(silinecek_id)
+                    st.success(f"'{silinecek_isim}' ve tüm verileri sistemden başarıyla silindi.")
+                    
+                    # Eğer silinen çocuk şu an aktif olarak seçiliyse, oturumunu temizle
+                    if st.session_state.get("aktif_cocuk_id") == silinecek_id:
+                        st.session_state.aktif_cocuk_id = None
+                        st.session_state.aktif_cocuk_isim = ""
+                        
+                    st.rerun()
 
     with t6:
         st.markdown('<div class="glass-box"><h3>Qyvam AI Pedagog</h3><p style="color:#64748b;">Rehberlik sürecinde yapay zekaya danışın. Eğitim tavsiyeleri alın.</p></div>', unsafe_allow_html=True)
