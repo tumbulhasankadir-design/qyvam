@@ -555,41 +555,30 @@ def veli_panel_ekrani():
                     st.error("Lütfen berat adını ve açıklamasını boş bırakmayın.")
 
     with t5:
-        st.markdown('<div class="glass-box"><h3>Sistem Kayıt Yönetimi</h3><p style="color:#64748b;">Yeni profil ekleyebilir veya mevcut profilleri sistemden tamamen silebilirsiniz.</p></div>', unsafe_allow_html=True)
+        st.markdown('### 🛠️ Sistem Kayıt Yönetimi')
         
-        col_ekle, col_cikar = st.columns(2)
+        # 1. Ekleme Kısmı
+        yeni_isim = st.text_input("Yeni Çocuğun İsmi:", key="yeni_cocuk_input")
+        if st.button("Çocuğu Sisteme Ekle"):
+            if yeni_isim:
+                cocuk_ekle(yeni_isim)
+                st.success(f"{yeni_isim} eklendi!")
+                st.rerun()
+
+        st.markdown("---")
         
-        with col_ekle:
-            st.markdown("#### ➕ Yeni Profil Ekle")
-            yeni_isim = st.text_input("Çocuğun İsmi:")
-            if st.button("Sisteme Ekle"):
-                if yeni_isim.strip() != "":
-                    cocuk_ekle(yeni_isim.strip())
-                    st.success(f"{yeni_isim} başarıyla eklendi!")
-                    st.rerun()
-                else:
-                    st.error("Lütfen geçerli bir isim girin.")
-                    
-        with col_cikar:
-            st.markdown("#### 🗑️ Profil Sil (Çıkar)")
-            cocuklar = cocuklari_getir()
-            if not cocuklar:
-                st.info("Sistemde silinecek kayıt yok.")
-            else:
-                silinecek_isim = st.selectbox("Silinecek Çocuğu Seçin:", [c[1] for c in cocuklar])
-                silinecek_id = next(c[0] for c in cocuklar if c[1] == silinecek_isim)
-                
-                st.warning("⚠️ Dikkat: Bu işlem çocuğun tüm geçmişini ve beratlarını da silecektir.")
-                if st.button("❌ Seçili Profili Tamamen Sil"):
-                    cocuk_sil(silinecek_id)
-                    st.success(f"'{silinecek_isim}' ve tüm verileri sistemden başarıyla silindi.")
-                    
-                    # Eğer silinen çocuk şu an aktif olarak seçiliyse, oturumunu temizle
-                    if st.session_state.get("aktif_cocuk_id") == silinecek_id:
-                        st.session_state.aktif_cocuk_id = None
-                        st.session_state.aktif_cocuk_isim = ""
-                        
-                    st.rerun()
+        # 2. Silme Kısmı
+        tum_cocuklar = cocuklari_getir()
+        if tum_cocuklar:
+            secilen_isim = st.selectbox("Silinecek Çocuğu Seç:", [c[1] for c in tum_cocuklar], key="sil_cocuk_select")
+            if st.button("❌ Seçili Çocuğu Sil"):
+                # Seçilen ismin ID'sini bul
+                cid = next(c[0] for c in tum_cocuklar if c[1] == secilen_isim)
+                cocuk_sil(cid)
+                st.success(f"{secilen_isim} başarıyla silindi.")
+                st.rerun()
+        else:
+            st.info("Sistemde kayıtlı çocuk yok.")
 
     with t6:
         st.markdown('<div class="glass-box"><h3>Qyvam AI Pedagog</h3><p style="color:#64748b;">Rehberlik sürecinde yapay zekaya danışın. Eğitim tavsiyeleri alın.</p></div>', unsafe_allow_html=True)
