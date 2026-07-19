@@ -47,7 +47,24 @@ def veritabani_hazirla():
 
 veritabani_hazirla()
 
-        # ==============================================================================
+# ==============================================================================
+# ÇOCUK EKLEME FONKSİYONU
+# ==============================================================================
+def cocuk_ekle(isim):
+    import sqlite3
+    conn = sqlite3.connect('qyvam_veritabani.db')
+    c = conn.cursor()
+    # Eğer cocuklar tablosu yoksa önce onu oluşturalım (Güvenlik önlemi)
+    c.execute('''CREATE TABLE IF NOT EXISTS cocuklar 
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                  isim TEXT, 
+                  mevcut_adim INTEGER)''')
+    # Şimdi ismi kaydedelim
+    c.execute("INSERT INTO cocuklar (isim, mevcut_adim) VALUES (?, ?)", (isim, 1))
+    conn.commit()
+    conn.close()
+
+# ==============================================================================
 # ÖZEL BERAT VERİTABANI İŞLEMLERİ
 # ==============================================================================
 def ozel_berat_ekle(cocuk_id, berat_adi, berat_aciklama):
