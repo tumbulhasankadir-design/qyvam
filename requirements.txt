@@ -1,4 +1,6 @@
 streamlit
-openai
+pandas
+plotly
 python-docx
 pytz
+openai
