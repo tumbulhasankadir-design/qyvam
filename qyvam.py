@@ -80,7 +80,15 @@ def cocuk_ekle(isim, veli_kadi):
     c.execute("INSERT INTO Cocuklar (isim, mevcut_adim, veli_kadi) VALUES (?, ?, ?)", (isim, 1, veli_kadi))
     conn.commit()
     conn.close()
-
+    
+def grafik_verisi_getir(veli_kadi):
+    conn = sqlite3.connect(DB_YOLU)
+    c = conn.cursor()
+    c.execute("SELECT isim, mevcut_adim FROM Cocuklar WHERE veli_kadi=?", (veli_kadi,))
+    data = c.fetchall()
+    conn.close()
+    return data
+    
 def cocuk_sil(cocuk_id):
     conn = sqlite3.connect(DB_YOLU)
     c = conn.cursor()
