@@ -55,6 +55,12 @@ def init_db():
 
 init_db()
 
+# --- HAYALET VERİ TEMİZLİĞİ (Sadece 1 kez çalışması yeterli) ---
+conn_temizle = sqlite3.connect(DB_YOLU)
+conn_temizle.cursor().execute("DELETE FROM Cocuklar WHERE isim = 'Yusuf' OR veli_kadi = 'Kurucu'")
+conn_temizle.commit()
+conn_temizle.close()
+
 # --- Temel Veritabanı Fonksiyonları ---
 def veli_kaydol(kadi, sifre):
     conn = sqlite3.connect(DB_YOLU)
@@ -287,22 +293,45 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# ÜST DURUM ÇUBUĞU (NAVBAR)
+# ÜST DURUM ÇUBUĞU (NAVBAR - GÜNCELLENDİ)
 # ==============================================================================
 def ust_komuta_merkezi():
     st.markdown('<div class="top-bar"></div>', unsafe_allow_html=True)
-    col_sol, col_orta, col_sag = st.columns([3, 1, 4])
+    col_sol, col_orta, col_sag = st.columns([3, 2, 4])
+    
     with col_sol:
         if st.session_state.aktif_sayfa == "Ana Sayfa": durum_metni = "Ana Sayfa"
         elif st.session_state.aktif_sayfa == "Veli_Panel": durum_metni = "Rehberlik Köşesi"
         elif st.session_state.aktif_sayfa == "Veli_Giris": durum_metni = "Rehber Girişi"
         else: durum_metni = "Gelişim Yolculuğu"
         st.markdown(f'<div style="color: #64748b; font-weight: 500; font-size:1.1rem;">Qyvam Eğitim Ekosistemi <span style="margin: 0 10px;">/</span> <b style="color: #4f46e5;">{durum_metni}</b></div>', unsafe_allow_html=True)
+        
     with col_orta:
-        if st.session_state.aktif_sayfa == "Ana Sayfa" or st.session_state.aktif_sayfa == "Cocuk_Panel":
-            if st.button("Rehber Girişi"): st.session_state.aktif_sayfa = "Veli_Giris"; st.rerun()
+        # 1. Ana Sayfa Butonu (Artık şifreyi silmez)
+        if st.session_state.aktif_sayfa != "Ana Sayfa":
+            if st.button("🏠 Ana Sayfa"):
+                st.session_state.aktif_sayfa = "Ana Sayfa"
+                st.session_state.aktif_cocuk_id = None
+                st.rerun()
+                
+        # 2. Giriş Yapılmışsa (Şifresiz Geçiş ve Çıkış Butonu)
+        if st.session_state.get("veli_kadi"):
+            if st.session_state.aktif_sayfa != "Veli_Panel":
+                if st.button("🛡️ Rehber Paneline Dön"):
+                    st.session_state.aktif_sayfa = "Veli_Panel"
+                    st.rerun()
+            else:
+                if st.button("🚪 Çıkış Yap"):
+                    st.session_state.veli_kadi = None
+                    st.session_state.aktif_sayfa = "Ana Sayfa"
+                    st.rerun()
+        # 3. Giriş Yapılmamışsa (Giriş Butonu)
         else:
-            if st.button("Ana Sayfaya Dön"): st.session_state.aktif_sayfa = "Ana Sayfa"; st.session_state.veli_kadi = None; st.session_state.aktif_cocuk_id = None; st.rerun()
+            if st.session_state.aktif_sayfa not in ["Veli_Giris", "Veli_Panel"]:
+                if st.button("🔐 Rehber Girişi"):
+                    st.session_state.aktif_sayfa = "Veli_Giris"
+                    st.rerun()
+                    
     with col_sag:
         tz = pytz.timezone('Europe/Istanbul')
         simdi = datetime.now(tz)
