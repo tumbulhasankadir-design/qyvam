@@ -36,7 +36,7 @@ if 'aktif_cocuk_id' not in st.session_state: st.session_state.aktif_cocuk_id = N
 if 'aktif_cocuk_isim' not in st.session_state: st.session_state.aktif_cocuk_isim = ""
 
 # ==============================================================================
-# VERİTABANI MOTORU (TAKVİM EKLENDİ)
+# VERİTABANI MOTORU
 # ==============================================================================
 def init_db():
     conn = sqlite3.connect(DB_YOLU)
@@ -49,16 +49,13 @@ def init_db():
         pass
     c.execute('''CREATE TABLE IF NOT EXISTS Gorevler (id INTEGER PRIMARY KEY AUTOINCREMENT, cocuk_id INTEGER, gorev_adi TEXT, tefekkur TEXT, durum TEXT, puan INTEGER, veli_notu TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS ozel_beratlar (id INTEGER PRIMARY KEY AUTOINCREMENT, cocuk_id INTEGER, berat_adi TEXT, berat_aciklama TEXT)''')
-    
-    # YENİ: Takvim/Ajanda Tablosu
     c.execute('''CREATE TABLE IF NOT EXISTS Takvim (id INTEGER PRIMARY KEY AUTOINCREMENT, veli_kadi TEXT, cocuk_id INTEGER, tarih TEXT, baslik TEXT, detay TEXT)''')
-    
     conn.commit()
     conn.close()
 
 init_db()
 
-# --- Veritabanı Temel Fonksiyonları ---
+# --- Temel Veritabanı Fonksiyonları ---
 def veli_kaydol(kadi, sifre):
     conn = sqlite3.connect(DB_YOLU)
     c = conn.cursor()
@@ -127,7 +124,7 @@ def cocuk_bilgisi_getir(cocuk_id):
     conn.close()
     return sonuc
 
-# --- Görev ve Raporlama Fonksiyonları ---
+# --- Görev ve Onay Fonksiyonları ---
 def onay_bekleyenleri_getir(veli_kadi):
     conn = sqlite3.connect(DB_YOLU)
     imlec = conn.cursor()
@@ -174,7 +171,7 @@ def veri_onayla(islem_id, cocuk_id):
     conn.commit()
     conn.close()
 
-# --- Yeni: Takvim Fonksiyonları ---
+# --- Takvim Fonksiyonları ---
 def ajanda_ekle(veli_kadi, cocuk_id, tarih, baslik, detay):
     conn = sqlite3.connect(DB_YOLU)
     c = conn.cursor()
@@ -236,9 +233,6 @@ def word_raporu_olustur(cocuk_ismi, gorev_adi, veli_notu, fotograf_bytes=None):
     byte_io.seek(0)
     return byte_io
 
-# ==============================================================================
-# AI MOTORU
-# ==============================================================================
 def ai_cevap_uret(soru, mevcut_adim, rol="veli", cocuk_isim=""):
     if not OPENROUTER_KEY:
         return "[ SİSTEM UYARISI ]: API Anahtarı bulunamadı. Yapay zeka çevrimdışı."
@@ -269,7 +263,6 @@ st.markdown("""
     
     .glass-task { background: linear-gradient(145deg, #ffffff, #fdf4ff); border-left: 6px solid #d946ef; border-radius: 16px; padding: 25px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
     
-    /* Yeni Takvim/Ajanda Kartı Tasarımı */
     .agenda-card { background: #ffffff; border-left: 5px solid #6366f1; border-radius: 12px; padding: 15px 20px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(99, 102, 241, 0.08); display: flex; flex-direction: column; }
     .agenda-date { color: #6366f1; font-weight: 700; font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; }
     .agenda-title { font-size: 1.15rem; font-weight: 700; color: #1e293b; margin-bottom: 5px; }
@@ -390,7 +383,7 @@ def veli_giris_ekrani():
                 else: st.warning("Kullanıcı adı ve şifre boş bırakılamaz.")
 
 # ==============================================================================
-# SAYFA 3: VELİ PANELİ (TAKVİM 7. SEKME OLARAK EKLENDİ)
+# SAYFA 3: VELİ PANELİ (TAKVİM & EKSİKSİZ BERAT KODU DAHİL)
 # ==============================================================================
 def veli_panel_ekrani():
     if not st.session_state.get("veli_kadi"):
@@ -450,12 +443,122 @@ def veli_panel_ekrani():
         if cocuklar:
             col_c, col_g = st.columns(2)
             with col_c: sec_isim = st.selectbox("Görev Atanacak Çocuk:", [c[1] for c in cocuklar], key="g_isim"); sec_id = next(c[0] for c in cocuklar if c[1] == sec_isim)
-            with col_g: muf_sec = [f"Adım {a}: {i['faz']}" for a, i in MUFREDAT.items()]; sec_muf = st.selectbox("Aşama:", muf_sec); y_adim = int(sec_muf.split(":")[0].replace("Adım ", ""))
+            with col_g: muf_sec = [f"Adım {a}: {i['faz']} ➔ {i['alt_seviye']}" for a, i in MUFREDAT.items()]; sec_muf = st.selectbox("Aşama:", muf_sec); y_adim = int(sec_muf.split(":")[0].replace("Adım ", ""))
             if st.button("🚀 Görevi Ata"): cocuk_adim_guncelle(sec_id, y_adim); st.rerun()
 
     with t4:
-        st.markdown('<div class="glass-box"><h3>Özel Berat / Sertifika Tasarla</h3></div>', unsafe_allow_html=True)
-        st.info("Bu ekran 6. Sürümde yer alan tüm şık berat tasarımlarını içerir. Görsel kodları yer kaplamasın diye bu alana eklenecektir.") # Görsel HTML kodları çok uzun olduğu için önceki versiyondaki kodunuz çalışacaktır.
+        st.markdown('<div class="glass-box"><h3>Özel Berat / Sertifika Tasarla</h3><p style="color:#64748b;">Görsel olarak harika sertifikalar oluşturun, bilgisayarınıza indirin ve yazdırın.</p></div>', unsafe_allow_html=True)
+        cocuklar = cocuklari_getir(st.session_state.veli_kadi)
+        if not cocuklar:
+            st.warning("Önce 'Sisteme Kayıt' sekmesinden bir çocuk eklemelisiniz.")
+        else:
+            BERAT_TEMALARI = {
+                "1. Antik Parşömen (Tarihi/Klasik)": {"bg": "#fefce8", "border": "#92400e", "text": "#451a03"},
+                "2. Siber Uzay (Fütüristik/Mavi)": {"bg": "#eff6ff", "border": "#1e40af", "text": "#1e3a8a"},
+                "3. Kökler ve Doğa (Huzur/Yeşil)": {"bg": "#f0fdf4", "border": "#166534", "text": "#14532d"},
+                "4. Güneş Yıldızı (Enerji/Altın)": {"bg": "#fffbeb", "border": "#b45309", "text": "#78350f"},
+                "5. Derin Okyanus (Bilgelik/Lacivert)": {"bg": "#f8fafc", "border": "#334155", "text": "#0f172a"},
+                "6. Neon Işıklar (Canlı/Pembe)": {"bg": "#fdf2f8", "border": "#be185d", "text": "#831843"},
+                "7. Zarif Minimal (Sade/Siyah-Beyaz)": {"bg": "#ffffff", "border": "#475569", "text": "#1e293b"}
+            }
+
+            col_sol, col_sag = st.columns([1, 1])
+            with col_sol:
+                secilen_isim = st.selectbox("Beratı Kazanacak Çocuğu Seçin:", [c[1] for c in cocuklar], key="berat_cocuk")
+                secilen_id = next(c[0] for c in cocuklar if c[1] == secilen_isim)
+                veli_isim = st.text_input("Anne/Baba Adı Soyadı:", placeholder="Örn: Ahmet Yılmaz")
+                faz_adi = st.selectbox("Hangi Faz İçin Veriliyor?", [
+                    "KÖKLER FAZI", "BAĞLAR FAZI", "PUSULA FAZI", 
+                    "AYNALAR FAZI", "ÇARKLAR FAZI", "KÖPRÜLER FAZI", "KANATLAR FAZI", "ÖZEL BAŞARI BERATI"
+                ])
+                secilen_tema = st.selectbox("Sertifika Tasarımı (7 Farklı Tema):", list(BERAT_TEMALARI.keys()))
+            with col_sag:
+                st.info("💡 **Nasıl Çıktı Alınır?**\nBeratınızı oluşturduktan sonra 'İndir' butonuna basarak bilgisayarınıza kaydedin. Tarayıcıda açtıktan sonra klavyeden **Ctrl+P** tuşlarına basarak A4 yatay olarak yazdırabilirsiniz.")
+                olustur_buton = st.button("🎨 Beratı Ekranda Çiz ve Oluştur")
+
+            if olustur_buton:
+                if not veli_isim:
+                    st.error("Lütfen imza alanı için Anne/Baba adını giriniz.")
+                else:
+                    tema = BERAT_TEMALARI[secilen_tema]
+                    html_icerik = f"""
+                    <html>
+                    <head>
+                    <meta charset="utf-8">
+                    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel:wght@600;700&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+                    <style>
+                        body {{ margin: 0; padding: 0; display: flex; justify-content: center; background: transparent; }}
+                        .certificate {{ width: 1000px; height: 707px; background: {tema['bg']}; padding: 35px; box-sizing: border-box; position: relative; }}
+                        .border-outer {{ width: 100%; height: 100%; border: 2px solid {tema['border']}; padding: 8px; box-sizing: border-box; }}
+                        .border-inner {{ width: 100%; height: 100%; border: 4px solid {tema['border']}; padding: 50px 70px; box-sizing: border-box; position: relative; text-align: center; }}
+                        .corner {{ position: absolute; width: 15px; height: 15px; background: {tema['bg']}; border: 3px solid {tema['border']}; border-radius: 50%; }}
+                        .corner-tl {{ top: -10px; left: -10px; }}
+                        .corner-tr {{ top: -10px; right: -10px; }}
+                        .corner-bl {{ bottom: -10px; left: -10px; }}
+                        .corner-br {{ bottom: -10px; right: -10px; }}
+                        .header {{ font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 500; color: {tema['text']}; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }}
+                        .title {{ font-family: 'Cinzel', serif; font-size: 52px; font-weight: 700; color: {tema['border']}; margin-bottom: 30px; letter-spacing: 1px; }}
+                        .salutation {{ font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 600; color: {tema['text']}; margin-bottom: 5px; }}
+                        .name {{ font-family: 'Alex Brush', cursive; font-size: 85px; color: {tema['border']}; margin: 0 0 25px 0; line-height: 1.1; }}
+                        .description {{ font-family: 'Montserrat', sans-serif; font-size: 16px; line-height: 1.8; color: {tema['text']}; margin: 0 auto 40px auto; max-width: 85%; }}
+                        .footer {{ display: flex; justify-content: space-between; align-items: flex-end; position: absolute; bottom: 50px; left: 70px; right: 70px; }}
+                        .signature-block, .qyvam-logo-block {{ text-align: center; width: 220px; position: relative; z-index: 10; }}
+                        .sign-name {{ font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 600; color: {tema['text']}; }}
+                        .sign-title {{ font-family: 'Montserrat', sans-serif; font-size: 13px; color: {tema['text']}; }}
+                        .sign-space {{ height: 50px; }}
+                        .sign-line {{ border-top: 1px solid {tema['text']}; width: 100%; margin: 0 auto; }}
+                        .seal {{ position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); opacity: 0.15; width: 140px; z-index: 1; }}
+                        .qyvam-brand {{ font-family: 'Cinzel', serif; font-size: 26px; font-weight: 700; color: {tema['border']}; letter-spacing: 3px; margin-top: 25px; margin-bottom: 5px; }}
+                        .qyvam-sub {{ font-family: 'Montserrat', sans-serif; font-size: 10px; letter-spacing: 1px; color: {tema['text']}; text-transform: uppercase; }}
+                    </style>
+                    </head>
+                    <body>
+                        <div class="certificate">
+                            <div class="border-outer">
+                                <div class="border-inner">
+                                    <div class="corner corner-tl"></div>
+                                    <div class="corner corner-tr"></div>
+                                    <div class="corner corner-bl"></div>
+                                    <div class="corner corner-br"></div>
+                                    <div class="header">Qyvam Eğitim Sistemi</div>
+                                    <div class="title">{faz_adi}</div>
+                                    <div class="salutation">Sevgili oğlum/kızım ;</div>
+                                    <div class="name">{secilen_isim}</div>
+                                    <div class="description">Bu bir sertifikadan daha fazlası; birlikte geçirdiğimiz harika anların bir hatırası!<br><strong>{faz_adi}</strong> yolculuğumuza ortak olduğun ve bu güzel deneyimi beraber paylaştığımız için kalpten teşekkür ederim. Başarılarının devamını dilerim.</div>
+                                    <div class="footer">
+                                        <div class="signature-block">
+                                            <div class="sign-name">{veli_isim}</div>
+                                            <div class="sign-title">Rehber Veli</div>
+                                            <div class="sign-space"></div>
+                                            <div class="sign-line"></div>
+                                        </div>
+                                        <div class="seal">
+                                            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M35 60 L20 100 L38 90 L50 100 Z" fill="{tema['border']}"/>
+                                                <path d="M65 60 L80 100 L62 90 L50 100 Z" fill="{tema['border']}"/>
+                                                <path d="M50 5 L56 16 L68 15 L70 27 L82 31 L77 42 L85 51 L75 58 L77 70 L65 72 L59 82 L50 74 L41 82 L35 72 L23 70 L25 58 L15 51 L23 42 L18 31 L30 27 L32 15 L44 16 Z" fill="{tema['border']}"/>
+                                                <circle cx="50" cy="43" r="24" fill="{tema['bg']}"/>
+                                                <polygon points="50,26 56,38 69,39 59,48 62,60 50,54 38,60 41,48 31,39 44,38" fill="{tema['border']}"/>
+                                            </svg>
+                                        </div>
+                                        <div class="qyvam-logo-block">
+                                            <div class="qyvam-brand">✧ QYVAM ✧</div>
+                                            <div class="qyvam-sub">Siber Uzay & Şahsiyet İnşası</div>
+                                            <div class="sign-line" style="margin-top: 15px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                    """
+                    st.markdown("### 📜 Tasarım Önizlemesi")
+                    import streamlit.components.v1 as components
+                    components.html(html_icerik, height=750)
+                    st.download_button("📥 Bu Beratı İndir (PDF / Çıktı İçin)", data=html_icerik, file_name=f"Qyvam_Berat_{secilen_isim}.html", mime="text/html")
+                    ozel_berat_ekle(secilen_id, faz_adi, "Veli tarafından özel tasarım berat takdim edildi.")
+                    st.success(f"Berat tasarımı hazırlandı ve {secilen_isim} isimli çocuğun profiline işlendi!")
 
     with t5:
         st.markdown('<div class="glass-box"><h3>Sistem Kayıt Yönetimi</h3></div>', unsafe_allow_html=True)
@@ -474,16 +577,13 @@ def veli_panel_ekrani():
         veli_sorusu = st.text_area("Pedagojik Danışmanınıza Sorun:")
         if st.button("🤖 Danış"): st.info(ai_cevap_uret(veli_sorusu, 1, rol="veli"))
 
-    # --- YENİ EKLENEN TAKVİM SEKMESİ ---
     with t7:
         st.markdown('<div class="glass-box"><h3>📅 Takvim & Ajanda</h3><p style="color:#64748b;">Çocuklarınız için ileri tarihli hedefler, geziler veya hatırlatıcılar ekleyin.</p></div>', unsafe_allow_html=True)
         cocuklar = cocuklari_getir(st.session_state.veli_kadi)
-        
         if not cocuklar:
             st.warning("Ajanda oluşturmak için önce bir çocuk eklemelisiniz.")
         else:
             col_form, col_liste = st.columns([1, 1.5])
-            
             with col_form:
                 st.markdown("#### 📝 Yeni Etkinlik Ekle")
                 t_isim = st.selectbox("Kimin İçin?", [c[1] for c in cocuklar])
@@ -491,38 +591,23 @@ def veli_panel_ekrani():
                 t_tarih = st.date_input("Tarih Seçiniz:")
                 t_baslik = st.text_input("Etkinlik Başlığı (Örn: Doğa Yürüyüşü)")
                 t_detay = st.text_area("Kısa Detay (İsteğe Bağlı)")
-                
                 if st.button("💾 Takvime Kaydet", key="btn_takvim_ekle"):
                     if t_baslik:
                         ajanda_ekle(st.session_state.veli_kadi, t_id, t_tarih, t_baslik, t_detay)
                         st.success("Etkinlik başarıyla takvime işlendi!")
                         st.rerun()
-                    else:
-                        st.error("Lütfen bir etkinlik başlığı girin.")
-            
+                    else: st.error("Lütfen bir etkinlik başlığı girin.")
             with col_liste:
                 st.markdown("#### 📌 Yaklaşan Etkinlikler")
                 ajanda_verileri = ajanda_getir(st.session_state.veli_kadi)
-                
-                if not ajanda_verileri:
-                    st.info("Yaklaşan herhangi bir etkinlik bulunmuyor.")
+                if not ajanda_verileri: st.info("Yaklaşan herhangi bir etkinlik bulunmuyor.")
                 else:
                     for kayit in ajanda_verileri:
                         k_id, k_isim, k_tarih, k_baslik, k_detay = kayit
-                        # Tarihi Türk standartlarına (GG.AA.YYYY) çeviriyoruz
                         t_obj = datetime.strptime(k_tarih, "%Y-%m-%d")
                         t_str = t_obj.strftime("%d.%m.%Y")
-                        
-                        st.markdown(f'''
-                        <div class="agenda-card">
-                            <div class="agenda-date">📅 {t_str} - 👤 {k_isim}</div>
-                            <div class="agenda-title">{k_baslik}</div>
-                            <div class="agenda-detail">{k_detay}</div>
-                        </div>
-                        ''', unsafe_allow_html=True)
-                        if st.button("🗑️ Sil", key=f"sil_t_{k_id}"):
-                            ajanda_sil(k_id)
-                            st.rerun()
+                        st.markdown(f'''<div class="agenda-card"><div class="agenda-date">📅 {t_str} - 👤 {k_isim}</div><div class="agenda-title">{k_baslik}</div><div class="agenda-detail">{k_detay}</div></div>''', unsafe_allow_html=True)
+                        if st.button("🗑️ Sil", key=f"sil_t_{k_id}"): ajanda_sil(k_id); st.rerun()
 
 # ==============================================================================
 # SAYFA 4: ÇOCUK (DİJİTAL İKİZ) VERİ GİRİŞ PANELİ (BİLDİRİM EKLENDİ)
@@ -539,16 +624,11 @@ def cocuk_panel_ekrani():
     
     st.markdown(f'<h1 class="neon-text" style="font-size: 2.5rem; text-align:left;">Hoş Geldin, {isim.title()}!</h1>', unsafe_allow_html=True)
     
-    # YENİ: Yaklaşan Etkinlik / Takvim Bildirimi
+    # YAKLAŞAN ETKİNLİK BİLDİRİMİ
     ajanda_kayitlari = cocuk_ajanda_getir(st.session_state.aktif_cocuk_id)
     if ajanda_kayitlari:
-        yakin_tarih, y_baslik, y_detay = ajanda_kayitlari[0] # Sadece en yakın olanı gösteriyoruz
-        st.markdown(f'''
-            <div class="neon-alert">
-                <b style="font-size:1.1rem;">🔔 Yaklaşan Bir Maceran Var! ({datetime.strptime(yakin_tarih, "%Y-%m-%d").strftime("%d.%m.%Y")})</b><br>
-                {y_baslik} - {y_detay}
-            </div>
-        ''', unsafe_allow_html=True)
+        yakin_tarih, y_baslik, y_detay = ajanda_kayitlari[0]
+        st.markdown(f'''<div class="neon-alert"><b style="font-size:1.1rem;">🔔 Yaklaşan Bir Maceran Var! ({datetime.strptime(yakin_tarih, "%Y-%m-%d").strftime("%d.%m.%Y")})</b><br>{y_baslik} - {y_detay}</div>''', unsafe_allow_html=True)
     
     st.markdown('<hr style="margin-top:-10px;">', unsafe_allow_html=True)
     
@@ -566,14 +646,7 @@ def cocuk_panel_ekrani():
         if bekleyen_gorev_kontrol(st.session_state.aktif_cocuk_id):
             st.markdown('<div class="glass-box"><h3 class="neon-text" style="color:#fca5a5;">Görev Onay Bekliyor ⏳</h3></div>', unsafe_allow_html=True)
         else:
-            st.markdown(f'''
-            <div class="glass-box">
-                <p style="color:#64748b; font-size:1.1rem; font-weight:600; margin-bottom:5px;">Aşama {mevcut_adim} : {adim_bilgisi["alt_seviye"]}</p>
-                <h2 class="neon-text" style="margin-top:0;">{adim_bilgisi["varsayilan_gorev"]}</h2>
-                <hr style="border-color: rgba(99, 102, 241, 0.2);">
-                <h4 style="color:#10b981;">Düşünme Vakti: {adim_bilgisi["varsayilan_tefekkur"]}</h4>
-            </div>
-            ''', unsafe_allow_html=True)
+            st.markdown(f'''<div class="glass-box"><p style="color:#64748b; font-size:1.1rem; font-weight:600; margin-bottom:5px;">Aşama {mevcut_adim} : {adim_bilgisi["alt_seviye"]}</p><h2 class="neon-text" style="margin-top:0;">{adim_bilgisi["varsayilan_gorev"]}</h2><hr style="border-color: rgba(99, 102, 241, 0.2);"><h4 style="color:#10b981;">Düşünme Vakti: {adim_bilgisi["varsayilan_tefekkur"]}</h4></div>''', unsafe_allow_html=True)
             cocuk_cevabi = st.text_area("Cevabını Buraya Yazabilirsin:", height=100)
             if st.button("✨ Görevimi Tamamladım, Gönder!"):
                 if cocuk_cevabi.strip() != "": cocuk_veri_gonder(st.session_state.aktif_cocuk_id, f"[ ADIM {mevcut_adim} ]: {adim_bilgisi['alt_seviye']}", cocuk_cevabi); st.rerun()
