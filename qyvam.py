@@ -705,76 +705,203 @@ elif st.session_state.aktif_sayfa == "Veli_Panel": veli_panel_ekrani()
 elif st.session_state.aktif_sayfa == "Cocuk_Panel": cocuk_panel_ekrani()
 
 # ==============================================================================
-# SİSTEM ALT BİLGİSİ (FOOTER)
+# ALT BİLGİ (FOOTER) MODÜLÜ
 # ==============================================================================
-def sistem_alt_bilgi_olustur():
-    st.markdown("""
-    <style>
-    .footer-container { border-top: 1px solid #e2e8f0; padding-top: 40px; margin-top: 80px; padding-bottom: 20px; background-color: transparent; }
-    .f-title { font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 15px; font-family: 'Outfit', sans-serif; }
-    .f-text { font-size: 0.95rem; color: #64748b; line-height: 1.6; }
-    .f-link { color: #64748b; text-decoration: none; display: block; margin-bottom: 10px; font-size: 0.95rem; transition: color 0.2s; font-weight: 500; }
-    .f-link:hover { color: #4f46e5; text-decoration: underline; }
-    .copyright { text-align: center; color: #94a3b8; font-size: 0.85rem; margin-top: 40px; border-top: 1px solid #f1f5f9; padding-top: 20px; font-weight: 500;}
-    </style>
-    <div class="footer-container"></div>
-    """, unsafe_allow_html=True)
-    
-    c1, c2, c3, c4 = st.columns([1.5, 1, 1, 1.2])
-    
-    with c1:
-        # Logonuzu (logo.png) otomatik çeker, yoksa şık bir yazı gösterir
-        if os.path.exists("logo.png"):
-            st.image("logo.png", width=180)
-        else:
-            st.markdown('<h2 style="color:#0f172a; margin-bottom:0; font-family: \'Outfit\', sans-serif;">✧ QYVAM ✧</h2>', unsafe_allow_html=True)
-        
-        st.markdown('''
-        <div class="f-text" style="margin-top:10px; margin-bottom:20px; font-weight: 600; color: #4f46e5;">
-            <i>"Kökü Değerlerimizde, Zirvesi Şahsiyette."</i>
-        </div>
-        <div class="f-text">
-            📍 Ankara, Türkiye<br>
-            ☎ +90 XXX XXX XX XX<br>
-            ✉ dedemkorkut90@gmail.com
-        </div>
-        ''', unsafe_allow_html=True)
-        
-    with c2:
-        st.markdown('<div class="f-title">Hızlı Bağlantılar</div>', unsafe_allow_html=True)
-        if st.button("🏠 Ana Sayfa", key="f_ana_btn", use_container_width=True): 
-            st.session_state.aktif_sayfa = "Ana Sayfa"; st.rerun()
-        st.markdown('<a href="https://mtod.mebnet.net/sites/default/files/Bili%C5%9Fsel%20Geli%C5%9Fim.pdf" target="_blank" class="f-link">📄 Bilişsel Gelişim</a>', unsafe_allow_html=True)
-        st.markdown('<a href="https://mtod.mebnet.net/sites/default/files/Bili%C5%9Fsel%20Geli%C5%9Fim.pdf" target="_blank" class="f-link">📄 Sistem Kılavuzu</a>', unsafe_allow_html=True)
-        if st.button("📝 Blog", key="f_blog_btn", use_container_width=True): 
-            st.toast("🚀 Qyvam Blog sayfası çok yakında sizlerle!")
-        
-    with c3:
-        st.markdown('<div class="f-title">Destek & Yasal</div>', unsafe_allow_html=True)
-        with st.expander("❓ SSS (Sıkça Sorulanlar)"):
-            st.markdown("**1. Qyvam Nedir?**\nÇocukların bilişsel gelişimini ve şahsiyet inşasını destekleyen dijital bir eğitim ekosistemidir.\n\n**2. Veriler güvende mi?**\nTüm verileriniz yerel sistemde şifreli olarak tutulur.\n\n**3. Beratlar nasıl kazanılır?**\nÇocuk, müfredattaki görevleri tamamlayıp rehber onayından geçerek berat kazanır.")
-        with st.expander("📜 Gizlilik Politikası"):
-            st.markdown("QYVAM olarak gizliliğinize saygı duyuyoruz. Girdiğiniz veriler, görev içerikleri ve gelişim raporları yalnızca size özel profilinizde saklanır ve asla üçüncü şahıslarla paylaşılmaz.")
-        with st.expander("🍪 Çerez Politikası"):
-            st.markdown("Platformumuz, oturumunuzu açık tutmak (şifre yorgunluğunu önlemek) ve size daha iyi bir deneyim sunmak için yalnızca zorunlu çerezleri kullanmaktadır. Reklam çerezleri kullanılmaz.")
-        with st.expander("⚖️ Kullanım Şartları"):
-            st.markdown("Bu sistemi kullanarak, sağlanan pedagojik asistanın (Qyman) sadece destekleyici bir rehberlik aracı olduğunu kabul etmiş olursunuz. Sürecin asıl yöneticisi daima Rehberdir (Veli/Öğretmen).")
-        with st.expander("🛡️ KVKK Aydınlatma"):
-            st.markdown("6698 sayılı KVKK kapsamında; sistemdeki verileriniz sadece şahsiyet inşası eğitim faaliyetlerinin yürütülmesi amacıyla işlenmektedir. İstediğiniz an tüm verilerinizi sistemden kalıcı olarak silebilirsiniz.")
+import base64
 
-    with c4:
-        st.markdown('<div class="f-title">Sosyal Medya</div>', unsafe_allow_html=True)
-        col_s1, col_s2 = st.columns(2)
-        with col_s1:
-            if st.button("📸 Insta"): st.toast("Çok yakında Instagram'dayız! ✨")
-            if st.button("🐦 X"): st.toast("Çok yakında X platformundayız! ✨")
-        with col_s2:
-            if st.button("💼 Linked"): st.toast("Çok yakında LinkedIn'deyiz! ✨")
-            if st.button("▶️ Tube"): st.toast("Çok yakında YouTube'dayız! ✨")
-            
-        st.markdown('<div style="margin-top:15px; font-weight:700; color:#0f172a; font-size:1rem; margin-bottom:10px;">E-Bülten</div>', unsafe_allow_html=True)
-        st.text_input("E-posta adresiniz:", placeholder="mail@ornek.com", label_visibility="collapsed")
-        if st.button("✉️ Abone Ol", key="bulten_btn", use_container_width=True):
-            st.success("Bülten altyapımız çok yakında aktif olacak!")
-            
-    st.markdown('<div class="copyright">© 2026 QYVAM. Tüm hakları saklıdır.</div>', unsafe_allow_html=True)
+def get_base64_image(image_path):
+    try:
+        with open(image_path, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode()
+    except:
+        return None
+
+def sayfa_altbilgisi_olustur():
+    logo_b64 = get_base64_image("logo.jpg") 
+    if logo_b64:
+        logo_html = f'<img src="data:image/jpeg;base64,{logo_b64}" class="footer-logo-img" alt="Qyvam Logo">'
+    else:
+        logo_html = '<h2 style="color:#4f46e5; font-family:\'Outfit\', sans-serif; margin-bottom:15px; font-weight:900;">✧ QYVAM ✧</h2>'
+
+    st.markdown(f"""
+    <style>
+    .qyvam-footer {{
+        background-color: #f8fafc;
+        border-top: 2px solid #e2e8f0;
+        padding: 50px 30px 20px 30px;
+        margin-top: 80px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        color: #475569;
+    }}
+    .footer-container {{
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }}
+    .footer-col h4 {{
+        color: #0f172a;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+        font-size: 1.2rem;
+        margin-bottom: 20px;
+    }}
+    .footer-col ul {{
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }}
+    .footer-col ul li {{
+        margin-bottom: 12px;
+    }}
+    .footer-col a {{
+        text-decoration: none;
+        color: #64748b;
+        font-size: 0.95rem;
+        transition: color 0.2s;
+    }}
+    .footer-col a:hover {{
+        color: #4f46e5;
+        font-weight: 600;
+    }}
+    .footer-logo-img {{
+        max-width: 160px;
+        margin-bottom: 15px;
+        border-radius: 8px;
+    }}
+    .footer-slogan {{
+        font-size: 1rem;
+        font-weight: 700;
+        color: #4f46e5;
+        margin-bottom: 15px;
+    }}
+    details.legal-box {{
+        margin-bottom: 10px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        overflow: hidden;
+    }}
+    details.legal-box summary {{
+        padding: 10px 15px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        color: #334155;
+        outline: none;
+        transition: background 0.2s;
+    }}
+    details.legal-box summary:hover {{
+        background: #f1f5f9;
+        color: #4f46e5;
+    }}
+    details.legal-box p {{
+        padding: 15px;
+        font-size: 0.85rem;
+        color: #64748b;
+        margin: 0;
+        border-top: 1px solid #e2e8f0;
+        background: #f8fafc;
+        line-height: 1.6;
+    }}
+    .social-links a {{
+        display: inline-block;
+        margin-right: 12px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        background: #e2e8f0;
+        padding: 8px 15px;
+        border-radius: 20px;
+        color: #475569;
+    }}
+    .social-links a:hover {{
+        background: #4f46e5;
+        color: white;
+    }}
+    .footer-bottom {{
+        text-align: center;
+        padding-top: 30px;
+        margin-top: 50px;
+        border-top: 1px solid #e2e8f0;
+        font-size: 0.9rem;
+        color: #94a3b8;
+        font-weight: 500;
+    }}
+    </style>
+    
+    <div class="qyvam-footer">
+        <div class="footer-container">
+            <div class="footer-col">
+                {logo_html}
+                <div class="footer-slogan">Kökü Değerlerimizde, Zirvesi Şahsiyette.</div>
+                <div style="font-size:0.9rem; line-height:1.8; color:#64748b;">
+                    📍 Ankara, Türkiye<br>
+                    ☎ +90 XXX XXX XX XX<br>
+                    ✉ <a href="mailto:dedemkorkut90@gmail.com" style="color:#4f46e5;">dedemkorkut90@gmail.com</a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4>Hızlı Bağlantılar</h4>
+                <ul>
+                    <li><a href="#">🏠 Ana Sayfa</a></li>
+                    <li><a href="#">📖 Hakkımızda</a></li>
+                    <li><a href="https://mtod.mebnet.net/sites/default/files/Bili%C5%9Fsel%20Geli%C5%9Fim.pdf" target="_blank">📚 Hizmetler (Bilişsel Gelişim)</a></li>
+                    <li><a href="https://mtod.mebnet.net/sites/default/files/Bili%C5%9Fsel%20Geli%C5%9Fim.pdf" target="_blank">📚 Hizmetler (Eğitim Modeli)</a></li>
+                    <li><a href="#yakinda" title="Blog sayfamız çok yakında sizlerle! Bizi takip etmeye devam edin.">📰 Blog <i>(Çok Yakında)</i></a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Destek & SSS</h4>
+                <details class="legal-box">
+                    <summary>❓ Qyvam Sistemi Nedir?</summary>
+                    <p>Çocukların bilişsel, ahlaki ve sosyal gelişimini müfredat tabanlı görevlerle destekleyen dijital bir şahsiyet inşası ve gelişim takip ekosistemidir.</p>
+                </details>
+                <details class="legal-box">
+                    <summary>❓ Verilerimiz Güvende mi?</summary>
+                    <p>Evet, sistemdeki verileriniz 3. şahıslara aktarılmaz. Bilgiler şifrelenmiş olarak cihazınızda KVKK standartlarına uygun şekilde korunur.</p>
+                </details>
+                <details class="legal-box">
+                    <summary>❓ Sistemi Kimler Kullanabilir?</summary>
+                    <p>Sistem, gelişim sürecini yöneten rehberler (veliler, öğretmenler, eğitmenler) ve onların gözetimindeki çocuklar için tasarlanmıştır.</p>
+                </details>
+                <ul style="margin-top:15px;">
+                    <li><a href="mailto:dedemkorkut90@gmail.com">🎧 Yardım Merkezi (İletişim)</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Yasal Bilgiler</h4>
+                <details class="legal-box">
+                    <summary>🛡️ Gizlilik Politikası</summary>
+                    <p>Qyvam, kullanıcıların kişisel verilerini yetkisiz erişime karşı korumayı taahhüt eder. Sistemdeki değerlendirmeler ve verileriniz sadece kendi profilinizde saklanır ve ticari amaçlarla asla paylaşılamaz.</p>
+                </details>
+                <details class="legal-box">
+                    <summary>🍪 Çerez Politikası</summary>
+                    <p>Platformumuz, oturumunuzu güvenli tutmak ve cihazlar arası senkronizasyonu sağlamak için temel düzeyde teknik (zorunlu) çerezler kullanır. Reklam veya pazarlama çerezi barındırmaz.</p>
+                </details>
+                <details class="legal-box">
+                    <summary>📜 Kullanım Şartları</summary>
+                    <p>Bu platform pedagojik eğitim amaçlıdır. Kullanıcılar, çocukların psikolojik gelişimini destekleyen etik kurallara uymakla yükümlüdür. Görev onayları tamamen rehberin inisiyatifindedir.</p>
+                </details>
+                <details class="legal-box">
+                    <summary>🔐 KVKK Aydınlatma Metni</summary>
+                    <p>6698 sayılı yasa kapsamında işlenen veriler (isim, ilerleme durumu, görev metinleri), yalnızca eğitim süreçlerinin takibi ve analizi için kullanılmaktadır. Veri sahibi dilediği an profilini ve tüm verilerini kalıcı olarak silebilir.</p>
+                </details>
+                
+                <h4 style="margin-top: 25px; margin-bottom:15px;">Sosyal Medya & Bülten</h4>
+                <div class="social-links">
+                    <a href="#ig" title="Çok yakında sizlerle! Bizi takip etmeye devam edin.">Instagram</a>
+                    <a href="#x" title="Çok yakında sizlerle!">X</a>
+                    <a href="#in" title="Çok yakında sizlerle!">LinkedIn</a>
+                    <a href="#yt" title="Çok yakında sizlerle!">YouTube</a>
+                </div>
+                <div style="margin-top:15px; font-size:0.9rem; color:#64748b; font-weight:600;">E-Bülten: [Çok Yakında]</div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            © 2026 QYVAM. Tüm hakları saklıdır.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+sayfa_altbilgisi_olustur()
