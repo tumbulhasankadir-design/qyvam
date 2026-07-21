@@ -293,10 +293,57 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# ÜST DURUM ÇUBUĞU (NAVBAR - GÜNCELLENDİ)
+# ÜST DURUM ÇUBUĞU (NAVBAR - ŞIK VE TAM EKRAN)
 # ==============================================================================
 def ust_komuta_merkezi():
-    st.markdown('<div class="top-bar"></div>', unsafe_allow_html=True)
+    st.markdown("""
+    <style>
+    /* Streamlit'in üst boşluğunu sıfırlıyoruz */
+    .block-container { padding-top: 3.5rem !important; }
+    
+    /* Tam Ekran Üst Bar Arka Planı (Cam Efekti) */
+    .modern-header-bg {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100vw;
+        height: 90px;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+        z-index: -1;
+    }
+    
+    /* Navigasyon Yazı Stilleri */
+    .nav-logo-text {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.6rem;
+        font-weight: 900;
+        background: linear-gradient(to right, #4f46e5, #9333ea);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0;
+        letter-spacing: 1px;
+    }
+    .nav-path { color: #64748b; font-weight: 500; font-size: 0.95rem; margin-top: -5px; }
+    .nav-time { text-align: right; color: #475569; font-weight: 600; font-size: 1.05rem; padding-top: 15px; font-family: 'Plus Jakarta Sans', sans-serif; }
+    
+    /* Üst Menü Butonlarını Zarifleştirme */
+    div[data-testid="column"]:nth-child(2) button {
+        padding: 6px 16px !important;
+        font-size: 0.95rem !important;
+        border-radius: 20px !important;
+        box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2) !important;
+        margin-top: 8px;
+    }
+    </style>
+    <div class="modern-header-bg"></div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown('<div style="margin-top: -25px; margin-bottom: 40px;">', unsafe_allow_html=True)
     col_sol, col_orta, col_sag = st.columns([3, 2, 4])
     
     with col_sol:
@@ -304,20 +351,19 @@ def ust_komuta_merkezi():
         elif st.session_state.aktif_sayfa == "Veli_Panel": durum_metni = "Rehberlik Köşesi"
         elif st.session_state.aktif_sayfa == "Veli_Giris": durum_metni = "Rehber Girişi"
         else: durum_metni = "Gelişim Yolculuğu"
-        st.markdown(f'<div style="color: #64748b; font-weight: 500; font-size:1.1rem;">Qyvam Eğitim Ekosistemi <span style="margin: 0 10px;">/</span> <b style="color: #4f46e5;">{durum_metni}</b></div>', unsafe_allow_html=True)
+        
+        st.markdown(f'<div class="nav-logo-text">✧ QYVAM</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="nav-path">Eğitim Ekosistemi <span style="margin: 0 8px; color:#cbd5e1;">/</span> <b style="color: #4f46e5;">{durum_metni}</b></div>', unsafe_allow_html=True)
         
     with col_orta:
-        # 1. Ana Sayfa Butonu (Artık şifreyi silmez)
         if st.session_state.aktif_sayfa != "Ana Sayfa":
             if st.button("🏠 Ana Sayfa"):
                 st.session_state.aktif_sayfa = "Ana Sayfa"
                 st.session_state.aktif_cocuk_id = None
                 st.rerun()
-                
-        # 2. Giriş Yapılmışsa (Şifresiz Geçiş ve Çıkış Butonu)
         if st.session_state.get("veli_kadi"):
             if st.session_state.aktif_sayfa != "Veli_Panel":
-                if st.button("🛡️ Rehber Paneline Dön"):
+                if st.button("🛡️ Rehber Paneli"):
                     st.session_state.aktif_sayfa = "Veli_Panel"
                     st.rerun()
             else:
@@ -325,7 +371,6 @@ def ust_komuta_merkezi():
                     st.session_state.veli_kadi = None
                     st.session_state.aktif_sayfa = "Ana Sayfa"
                     st.rerun()
-        # 3. Giriş Yapılmamışsa (Giriş Butonu)
         else:
             if st.session_state.aktif_sayfa not in ["Veli_Giris", "Veli_Panel"]:
                 if st.button("🔐 Rehber Girişi"):
@@ -335,7 +380,8 @@ def ust_komuta_merkezi():
     with col_sag:
         tz = pytz.timezone('Europe/Istanbul')
         simdi = datetime.now(tz)
-        st.markdown(f'<div style="text-align: right; color: #0f172a; font-weight: 600; font-size:1.1rem;">{simdi.strftime("%d.%m.%Y | %H:%M")}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="nav-time">{simdi.strftime("%d.%m.%Y")} <span style="color:#cbd5e1; margin:0 5px;">|</span> <span style="color:#6366f1;">{simdi.strftime("%H:%M")}</span></div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ==============================================================================
 # GELİŞİM RADARI (SOL MENÜ)
@@ -705,7 +751,7 @@ elif st.session_state.aktif_sayfa == "Veli_Panel": veli_panel_ekrani()
 elif st.session_state.aktif_sayfa == "Cocuk_Panel": cocuk_panel_ekrani()
 
 # ==============================================================================
-# ALT BİLGİ (FOOTER) MODÜLÜ
+# ALT BİLGİ (FOOTER) MODÜLÜ (TAM EKRAN GENİŞLİĞİNDE)
 # ==============================================================================
 import base64
 
@@ -721,113 +767,57 @@ def sayfa_altbilgisi_olustur():
     if logo_b64:
         logo_html = f'<img src="data:image/jpeg;base64,{logo_b64}" class="footer-logo-img" alt="Qyvam Logo">'
     else:
-        logo_html = '<h2 style="color:#4f46e5; font-family:\'Outfit\', sans-serif; margin-bottom:15px; font-weight:900;">✧ QYVAM ✧</h2>'
+        logo_html = '<h2 style="color:#4f46e5; font-family:\'Outfit\', sans-serif; margin-bottom:15px; font-weight:900; letter-spacing:1px;">✧ QYVAM ✧</h2>'
 
     st.markdown(f"""
     <style>
+    /* FOOTER'I TAM EKRAN (FULL WIDTH) YAPAN SİHİRLİ KOD */
     .qyvam-footer {{
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        right: 50%;
+        margin-left: -50vw;
+        margin-right: -50vw;
         background-color: #f8fafc;
-        border-top: 2px solid #e2e8f0;
-        padding: 50px 30px 20px 30px;
+        border-top: 1px solid #e2e8f0;
+        padding: 60px 0 20px 0; /* Sağ ve soldaki paddingi sıfırladık, içerik container'ı hizalayacak */
         margin-top: 80px;
         font-family: 'Plus Jakarta Sans', sans-serif;
         color: #475569;
     }}
+    /* İçeriklerin ortada hizalı durmasını sağlayan alan */
     .footer-container {{
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 40px;
-        max-width: 1200px;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 50px;
+        max-width: 1200px; /* İçerik çok fazla açılmasın diye limitliyoruz */
         margin: 0 auto;
+        padding: 0 40px;
     }}
     .footer-col h4 {{
         color: #0f172a;
         font-family: 'Outfit', sans-serif;
         font-weight: 700;
         font-size: 1.2rem;
-        margin-bottom: 20px;
+        margin-bottom: 25px;
     }}
-    .footer-col ul {{
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }}
-    .footer-col ul li {{
-        margin-bottom: 12px;
-    }}
-    .footer-col a {{
-        text-decoration: none;
-        color: #64748b;
-        font-size: 0.95rem;
-        transition: color 0.2s;
-    }}
-    .footer-col a:hover {{
-        color: #4f46e5;
-        font-weight: 600;
-    }}
-    .footer-logo-img {{
-        max-width: 160px;
-        margin-bottom: 15px;
-        border-radius: 8px;
-    }}
-    .footer-slogan {{
-        font-size: 1rem;
-        font-weight: 700;
-        color: #4f46e5;
-        margin-bottom: 15px;
-    }}
-    details.legal-box {{
-        margin-bottom: 10px;
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        overflow: hidden;
-    }}
-    details.legal-box summary {{
-        padding: 10px 15px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        cursor: pointer;
-        color: #334155;
-        outline: none;
-        transition: background 0.2s;
-    }}
-    details.legal-box summary:hover {{
-        background: #f1f5f9;
-        color: #4f46e5;
-    }}
-    details.legal-box p {{
-        padding: 15px;
-        font-size: 0.85rem;
-        color: #64748b;
-        margin: 0;
-        border-top: 1px solid #e2e8f0;
-        background: #f8fafc;
-        line-height: 1.6;
-    }}
-    .social-links a {{
-        display: inline-block;
-        margin-right: 12px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        background: #e2e8f0;
-        padding: 8px 15px;
-        border-radius: 20px;
-        color: #475569;
-    }}
-    .social-links a:hover {{
-        background: #4f46e5;
-        color: white;
-    }}
-    .footer-bottom {{
-        text-align: center;
-        padding-top: 30px;
-        margin-top: 50px;
-        border-top: 1px solid #e2e8f0;
-        font-size: 0.9rem;
-        color: #94a3b8;
-        font-weight: 500;
-    }}
+    .footer-col ul {{ list-style: none; padding: 0; margin: 0; }}
+    .footer-col ul li {{ margin-bottom: 12px; }}
+    .footer-col a {{ text-decoration: none; color: #64748b; font-size: 0.95rem; transition: color 0.2s; }}
+    .footer-col a:hover {{ color: #4f46e5; font-weight: 600; }}
+    .footer-logo-img {{ max-width: 170px; margin-bottom: 15px; border-radius: 8px; }}
+    .footer-slogan {{ font-size: 1rem; font-weight: 700; color: #4f46e5; margin-bottom: 15px; }}
+    
+    details.legal-box {{ margin-bottom: 10px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }}
+    details.legal-box summary {{ padding: 10px 15px; font-size: 0.9rem; font-weight: 600; cursor: pointer; color: #334155; outline: none; transition: background 0.2s; }}
+    details.legal-box summary:hover {{ background: #f1f5f9; color: #4f46e5; }}
+    details.legal-box p {{ padding: 15px; font-size: 0.85rem; color: #64748b; margin: 0; border-top: 1px solid #e2e8f0; background: #f8fafc; line-height: 1.6; }}
+    
+    .social-links a {{ display: inline-block; margin-right: 12px; font-size: 0.9rem; font-weight: 600; background: #e2e8f0; padding: 8px 15px; border-radius: 20px; color: #475569; }}
+    .social-links a:hover {{ background: #4f46e5; color: white; }}
+    
+    .footer-bottom {{ text-align: center; padding-top: 30px; margin-top: 60px; border-top: 1px solid #e2e8f0; font-size: 0.9rem; color: #94a3b8; font-weight: 500; width: 100%; }}
     </style>
     
     <div class="qyvam-footer">
@@ -835,10 +825,10 @@ def sayfa_altbilgisi_olustur():
             <div class="footer-col">
                 {logo_html}
                 <div class="footer-slogan">Kökü Değerlerimizde, Zirvesi Şahsiyette.</div>
-                <div style="font-size:0.9rem; line-height:1.8; color:#64748b;">
+                <div style="font-size:0.95rem; line-height:1.8; color:#64748b;">
                     📍 Ankara, Türkiye<br>
                     ☎ +90 XXX XXX XX XX<br>
-                    ✉ <a href="mailto:dedemkorkut90@gmail.com" style="color:#4f46e5;">dedemkorkut90@gmail.com</a>
+                    ✉ <a href="mailto:dedemkorkut90@gmail.com" style="color:#4f46e5; font-weight:600;">dedemkorkut90@gmail.com</a>
                 </div>
             </div>
             <div class="footer-col">
