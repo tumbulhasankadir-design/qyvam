@@ -751,7 +751,7 @@ elif st.session_state.aktif_sayfa == "Veli_Panel": veli_panel_ekrani()
 elif st.session_state.aktif_sayfa == "Cocuk_Panel": cocuk_panel_ekrani()
 
 # ==============================================================================
-# ALT BİLGİ (FOOTER) MODÜLÜ (TAM EKRAN VE HATASIZ)
+# ALT BİLGİ (FOOTER) MODÜLÜ (TAŞMA VE KOD GÖRÜNME HATASI DÜZELTİLDİ)
 # ==============================================================================
 import base64
 
@@ -769,142 +769,126 @@ def sayfa_altbilgisi_olustur():
     else:
         logo_html = '<h2 style="color:#4f46e5; font-family:\'Outfit\', sans-serif; margin-bottom:15px; font-weight:900; letter-spacing:1px;">✧ QYVAM ✧</h2>'
 
-    st.markdown(f"""
-    <style>
-    /* FOOTER TAM EKRAN AYARI */
-    .qyvam-footer {{
-        width: 100vw;
-        position: relative;
-        left: 50%;
-        right: 50%;
-        margin-left: -50vw;
-        margin-right: -50vw;
-        background-color: #f8fafc;
-        border-top: 1px solid #e2e8f0;
-        padding: 60px 0 20px 0; 
-        margin-top: 80px;
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        color: #475569;
-    }}
-    .footer-container {{
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 50px;
-        max-width: 1200px; 
-        margin: 0 auto;
-        padding: 0 40px;
-    }}
-    .footer-col h4 {{
-        color: #0f172a;
-        font-family: 'Outfit', sans-serif;
-        font-weight: 700;
-        font-size: 1.2rem;
-        margin-bottom: 25px;
-    }}
-    .footer-col ul {{ list-style: none; padding: 0; margin: 0; }}
-    .footer-col ul li {{ margin-bottom: 12px; }}
-    .footer-col a {{ text-decoration: none; color: #64748b; font-size: 0.95rem; transition: color 0.2s; }}
-    .footer-col a:hover {{ color: #4f46e5; font-weight: 600; }}
-    .footer-logo-img {{ max-width: 170px; margin-bottom: 15px; border-radius: 8px; }}
-    .footer-slogan {{ font-size: 1rem; font-weight: 700; color: #4f46e5; margin-bottom: 15px; }}
-    
-    details.legal-box {{ margin-bottom: 10px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }}
-    details.legal-box summary {{ padding: 10px 15px; font-size: 0.9rem; font-weight: 600; cursor: pointer; color: #334155; outline: none; transition: background 0.2s; }}
-    details.legal-box summary:hover {{ background: #f1f5f9; color: #4f46e5; }}
-    details.legal-box p {{ padding: 15px; font-size: 0.85rem; color: #64748b; margin: 0; border-top: 1px solid #e2e8f0; background: #f8fafc; line-height: 1.6; }}
-    
-    /* SOSYAL MEDYA KUTULARININ TAŞMASINI ENGELLEYEN YENİ KOD */
-    .social-links {{
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-    }}
-    .social-links a {{ 
-        font-size: 0.9rem; 
-        font-weight: 600; 
-        background: #e2e8f0; 
-        padding: 8px 15px; 
-        border-radius: 20px; 
-        color: #475569; 
-        text-decoration: none;
-    }}
-    .social-links a:hover {{ background: #4f46e5; color: white; }}
-    
-    .footer-bottom {{ text-align: center; padding-top: 30px; margin-top: 60px; border-top: 1px solid #e2e8f0; font-size: 0.9rem; color: #94a3b8; font-weight: 500; width: 100%; }}
-    </style>
-    
-    <div class="qyvam-footer">
-        <div class="footer-container">
-            <div class="footer-col">
-                {logo_html}
-                <div class="footer-slogan">Kökü Değerlerimizde, Zirvesi Şahsiyette.</div>
-                <div style="font-size:0.95rem; line-height:1.8; color:#64748b;">
-                    📍 Ankara, Türkiye<br>
-                    ☎ +90 XXX XXX XX XX<br>
-                    ✉ <a href="mailto:dedemkorkut90@gmail.com" style="color:#4f46e5; font-weight:600;">dedemkorkut90@gmail.com</a>
-                </div>
-            </div>
-            <div class="footer-col">
-                <h4>Hızlı Bağlantılar</h4>
-                <ul>
-                    <li><a href="#">🏠 Ana Sayfa</a></li>
-                    <li><a href="#">📖 Hakkımızda</a></li>
-                    <li><a href="https://mtod.mebnet.net/sites/default/files/Bili%C5%9Fsel%20Geli%C5%9Fim.pdf" target="_blank">📚 Hizmetler (Bilişsel Gelişim)</a></li>
-                    <li><a href="https://mtod.mebnet.net/sites/default/files/Bili%C5%9Fsel%20Geli%C5%9Fim.pdf" target="_blank">📚 Hizmetler (Eğitim Modeli)</a></li>
-                    <li><a href="#yakinda" title="Blog sayfamız çok yakında sizlerle! Bizi takip etmeye devam edin.">📰 Blog <i>(Çok Yakında)</i></a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>Destek & SSS</h4>
-                <details class="legal-box">
-                    <summary>❓ Qyvam Sistemi Nedir?</summary>
-                    <p>Çocukların bilişsel, ahlaki ve sosyal gelişimini müfredat tabanlı görevlerle destekleyen dijital bir şahsiyet inşası ve gelişim takip ekosistemidir.</p>
-                </details>
-                <details class="legal-box">
-                    <summary>❓ Verilerimiz Güvende mi?</summary>
-                    <p>Evet, sistemdeki verileriniz 3. şahıslara aktarılmaz. Bilgiler şifrelenmiş olarak cihazınızda KVKK standartlarına uygun şekilde korunur.</p>
-                </details>
-                <details class="legal-box">
-                    <summary>❓ Sistemi Kimler Kullanabilir?</summary>
-                    <p>Sistem, gelişim sürecini yöneten rehberler (veliler, öğretmenler, eğitmenler) ve onların gözetimindeki çocuklar için tasarlanmıştır.</p>
-                </details>
-                <ul style="margin-top:15px;">
-                    <li><a href="mailto:dedemkorkut90@gmail.com">🎧 Yardım Merkezi (İletişim)</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>Yasal Bilgiler</h4>
-                <details class="legal-box">
-                    <summary>🛡️ Gizlilik Politikası</summary>
-                    <p>Qyvam, kullanıcıların kişisel verilerini yetkisiz erişime karşı korumayı taahhüt eder. Sistemdeki değerlendirmeler ve verileriniz sadece kendi profilinizde saklanır ve ticari amaçlarla asla paylaşılamaz.</p>
-                </details>
-                <details class="legal-box">
-                    <summary>🍪 Çerez Politikası</summary>
-                    <p>Platformumuz, oturumunuzu güvenli tutmak ve cihazlar arası senkronizasyonu sağlamak için temel düzeyde teknik (zorunlu) çerezler kullanır. Reklam veya pazarlama çerezi barındırmaz.</p>
-                </details>
-                <details class="legal-box">
-                    <summary>📜 Kullanım Şartları</summary>
-                    <p>Bu platform pedagojik eğitim amaçlıdır. Kullanıcılar, çocukların psikolojik gelişimini destekleyen etik kurallara uymakla yükümlüdür. Görev onayları tamamen rehberin inisiyatifindedir.</p>
-                </details>
-                <details class="legal-box">
-                    <summary>🔐 KVKK Aydınlatma Metni</summary>
-                    <p>6698 sayılı yasa kapsamında işlenen veriler (isim, ilerleme durumu, görev metinleri), yalnızca eğitim süreçlerinin takibi ve analizi için kullanılmaktadır. Veri sahibi dilediği an profilini ve tüm verilerini kalıcı olarak silebilir.</p>
-                </details>
-                
-                <h4 style="margin-top: 25px; margin-bottom:15px;">Sosyal Medya & Bülten</h4>
-                <div class="social-links">
-                    <a href="#ig" title="Çok yakında sizlerle! Bizi takip etmeye devam edin.">Instagram</a>
-                    <a href="#x" title="Çok yakında sizlerle!">X</a>
-                    <a href="#in" title="Çok yakında sizlerle!">LinkedIn</a>
-                    <a href="#yt" title="Çok yakında sizlerle!">YouTube</a>
-                </div>
-                <div style="margin-top:15px; font-size:0.9rem; color:#64748b; font-weight:600;">E-Bülten: [Çok Yakında]</div>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            © 2026 QYVAM. Tüm hakları saklıdır.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    # DİKKAT: Streamlit'in kod sanmaması için aşağıdaki HTML satırları sola yaslanmıştır.
+    footer_html = f"""
+<style>
+.qyvam-footer {{
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    background-color: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    padding: 60px 0 20px 0; 
+    margin-top: 80px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #475569;
+}}
+.footer-container {{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 50px;
+    max-width: 1200px; 
+    margin: 0 auto;
+    padding: 0 40px;
+}}
+.footer-col h4 {{
+    color: #0f172a;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-bottom: 25px;
+}}
+.footer-col ul {{ list-style: none; padding: 0; margin: 0; }}
+.footer-col ul li {{ margin-bottom: 12px; }}
+.footer-col a {{ text-decoration: none; color: #64748b; font-size: 0.95rem; transition: color 0.2s; }}
+.footer-col a:hover {{ color: #4f46e5; font-weight: 600; }}
+.footer-logo-img {{ max-width: 170px; margin-bottom: 15px; border-radius: 8px; }}
+.footer-slogan {{ font-size: 1rem; font-weight: 700; color: #4f46e5; margin-bottom: 15px; }}
+details.legal-box {{ margin-bottom: 10px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }}
+details.legal-box summary {{ padding: 10px 15px; font-size: 0.9rem; font-weight: 600; cursor: pointer; color: #334155; outline: none; transition: background 0.2s; }}
+details.legal-box summary:hover {{ background: #f1f5f9; color: #4f46e5; }}
+details.legal-box p {{ padding: 15px; font-size: 0.85rem; color: #64748b; margin: 0; border-top: 1px solid #e2e8f0; background: #f8fafc; line-height: 1.6; }}
+.social-links {{ display: flex; flex-wrap: wrap; gap: 10px; }}
+.social-links a {{ font-size: 0.9rem; font-weight: 600; background: #e2e8f0; padding: 8px 15px; border-radius: 20px; color: #475569; text-decoration: none; }}
+.social-links a:hover {{ background: #4f46e5; color: white; }}
+.footer-bottom {{ text-align: center; padding-top: 30px; margin-top: 60px; border-top: 1px solid #e2e8f0; font-size: 0.9rem; color: #94a3b8; font-weight: 500; width: 100%; }}
+</style>
+
+<div class="qyvam-footer">
+<div class="footer-container">
+<div class="footer-col">
+{logo_html}
+<div class="footer-slogan">Kökü Değerlerimizde, Zirvesi Şahsiyette.</div>
+<div style="font-size:0.95rem; line-height:1.8; color:#64748b;">
+📍 Ankara, Türkiye<br>
+☎ +90 XXX XXX XX XX<br>
+✉ <a href="mailto:dedemkorkut90@gmail.com" style="color:#4f46e5; font-weight:600;">dedemkorkut90@gmail.com</a>
+</div>
+</div>
+<div class="footer-col">
+<h4>Hızlı Bağlantılar</h4>
+<ul>
+<li><a href="#">🏠 Ana Sayfa</a></li>
+<li><a href="#">📖 Hakkımızda</a></li>
+<li><a href="https://mtod.mebnet.net/sites/default/files/Bili%C5%9Fsel%20Geli%C5%9Fim.pdf" target="_blank">📚 Hizmetler (Bilişsel Gelişim)</a></li>
+<li><a href="https://mtod.mebnet.net/sites/default/files/Bili%C5%9Fsel%20Geli%C5%9Fim.pdf" target="_blank">📚 Hizmetler (Eğitim Modeli)</a></li>
+<li><a href="#yakinda" title="Blog sayfamız çok yakında sizlerle! Bizi takip etmeye devam edin.">📰 Blog <i>(Çok Yakında)</i></a></li>
+</ul>
+</div>
+<div class="footer-col">
+<h4>Destek & SSS</h4>
+<details class="legal-box">
+<summary>❓ Qyvam Sistemi Nedir?</summary>
+<p>Çocukların bilişsel, ahlaki ve sosyal gelişimini müfredat tabanlı görevlerle destekleyen dijital bir şahsiyet inşası ve gelişim takip ekosistemidir.</p>
+</details>
+<details class="legal-box">
+<summary>❓ Verilerimiz Güvende mi?</summary>
+<p>Evet, sistemdeki verileriniz 3. şahıslara aktarılmaz. Bilgiler şifrelenmiş olarak cihazınızda KVKK standartlarına uygun şekilde korunur.</p>
+</details>
+<details class="legal-box">
+<summary>❓ Sistemi Kimler Kullanabilir?</summary>
+<p>Sistem, gelişim sürecini yöneten rehberler (veliler, öğretmenler, eğitmenler) ve onların gözetimindeki çocuklar için tasarlanmıştır.</p>
+</details>
+<ul style="margin-top:15px;">
+<li><a href="mailto:dedemkorkut90@gmail.com">🎧 Yardım Merkezi (İletişim)</a></li>
+</ul>
+</div>
+<div class="footer-col">
+<h4>Yasal Bilgiler</h4>
+<details class="legal-box">
+<summary>🛡️ Gizlilik Politikası</summary>
+<p>Qyvam, kullanıcıların kişisel verilerini yetkisiz erişime karşı korumayı taahhüt eder. Sistemdeki değerlendirmeler ve verileriniz sadece kendi profilinizde saklanır ve ticari amaçlarla asla paylaşılamaz.</p>
+</details>
+<details class="legal-box">
+<summary>🍪 Çerez Politikası</summary>
+<p>Platformumuz, oturumunuzu güvenli tutmak ve cihazlar arası senkronizasyonu sağlamak için temel düzeyde teknik (zorunlu) çerezler kullanır. Reklam veya pazarlama çerezi barındırmaz.</p>
+</details>
+<details class="legal-box">
+<summary>📜 Kullanım Şartları</summary>
+<p>Bu platform pedagojik eğitim amaçlıdır. Kullanıcılar, çocukların psikolojik gelişimini destekleyen etik kurallara uymakla yükümlüdür. Görev onayları tamamen rehberin inisiyatifindedir.</p>
+</details>
+<details class="legal-box">
+<summary>🔐 KVKK Aydınlatma Metni</summary>
+<p>6698 sayılı yasa kapsamında işlenen veriler (isim, ilerleme durumu, görev metinleri), yalnızca eğitim süreçlerinin takibi ve analizi için kullanılmaktadır. Veri sahibi dilediği an profilini ve tüm verilerini kalıcı olarak silebilir.</p>
+</details>
+<h4 style="margin-top: 25px; margin-bottom:15px;">Sosyal Medya & Bülten</h4>
+<div class="social-links">
+<a href="#ig" title="Çok yakında sizlerle! Bizi takip etmeye devam edin.">Instagram</a>
+<a href="#x" title="Çok yakında sizlerle!">X</a>
+<a href="#in" title="Çok yakında sizlerle!">LinkedIn</a>
+<a href="#yt" title="Çok yakında sizlerle!">YouTube</a>
+</div>
+<div style="margin-top:15px; font-size:0.9rem; color:#64748b; font-weight:600;">E-Bülten: [Çok Yakında]</div>
+</div>
+</div>
+<div class="footer-bottom">
+© 2026 QYVAM. Tüm hakları saklıdır.
+</div>
+</div>
+"""
+    st.markdown(footer_html, unsafe_allow_html=True)
 
 sayfa_altbilgisi_olustur()
