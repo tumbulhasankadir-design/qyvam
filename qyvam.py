@@ -1,4 +1,5 @@
 import streamlit as st
+import plotly.express as px
 import sqlite3
 import io
 import os
@@ -461,21 +462,45 @@ def veli_panel_ekrani():
                 )
 
     with t3:
-        st.markdown('<div class="glass-box"><h3>Gelişim Matrisi ve Analiz Grafiği</h3><p style="color:#64748b;">Çocuklarınızın müfredattaki ilerleyişini hem yüzde olarak hem de grafik üzerinde takip edebilir ve yeni görevler atayabilirsiniz.</p></div>', unsafe_allow_html=True)
+        st.markdown('<div class="glass-box"><h3>Gelişim Matrisi ve Analiz Grafiği</h3><p style="color:#64748b;">Çocuklarınızın müfredattaki ilerleyişini özel tasarımlı interaktif grafik üzerinde takip edebilir ve yeni görevler atayabilirsiniz.</p></div>', unsafe_allow_html=True)
         
         cocuklar = cocuklari_getir(st.session_state.veli_kadi)
         
-        # --- 1. KISIM: GÖRSEL GRAFİK VE MEVCUT DURUM ---
+        # --- 1. KISIM: ŞIK PLOTLY GRAFİĞİ ---
         if cocuklar:
             st.markdown("#### 📈 Çocukların İlerleme Grafiği")
             import pandas as pd
+            import plotly.express as px
             
-            # Verileri grafik kütüphanesinin (Pandas) anlayacağı forma sokuyoruz
-            g_veri = [{"Çocuk": c[1], "Mevcut Adım": c[2]} for c in cocuklar]
-            df = pd.DataFrame(g_veri).set_index("Çocuk")
+            # Veri çerçevesi oluşturuyoruz
+            df = pd.DataFrame(cocuklar, columns=["ID", "İsim", "Mevcut Adım"])
             
-            # Streamlit Yerleşik Şık Çubuk Grafiği
-            st.bar_chart(df, color="#4f46e5")
+            # Qyvam'ın mor/mavi ve pastel renk konseptine uygun özel renk paleti
+            fig = px.bar(
+                df, 
+                x="İsim", 
+                y="Mevcut Adım", 
+                text="Mevcut Adım",
+                color="Mevcut Adım",
+                color_continuous_scale=["#a5b4fc", "#6366f1", "#4f46e5"], # Açık mordan koyu mora şık geçiş
+                title="<b>Müfredat İlerleme Durumu</b>"
+            )
+            
+            # Grafik arayüzünü projenizin tasarımına (Glassmorphism) uyarlıyoruz
+            fig.update_layout(
+                plot_bgcolor="rgba(0,0,0,0)",
+                paper_bgcolor="rgba(0,0,0,0)",
+                font=dict(family="Nunito, sans-serif", color="#334155", size=14),
+                title_font=dict(size=18, color="#4f46e5"),
+                xaxis=dict(showgrid=False, linecolor="#cbd5e1"),
+                yaxis=dict(showgrid=True, gridcolor="#e2e8f0", linecolor="#cbd5e1"),
+                margin=dict(t=40, b=20, l=20, r=20)
+            )
+            
+            fig.update_traces(textfont_size=12, textangle=0, textposition="outside", cliponaxis=False)
+            
+            # Grafiği ekrana basıyoruz
+            st.plotly_chart(fig, use_container_width=True)
             
             st.markdown("<br>#### 📊 Detaylı İlerleme Çubukları", unsafe_allow_html=True)
             for cid, isim, adim in cocuklar:
