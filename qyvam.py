@@ -1,10 +1,10 @@
 import streamlit as st
-import plotly.express as px
 import sqlite3
 import io
 import os
 import pytz
 import random
+import plotly.express as px
 from datetime import datetime
 from docx import Document
 from docx.shared import Inches
