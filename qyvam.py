@@ -7,6 +7,8 @@ import random
 from datetime import datetime
 from docx import Document
 from docx.shared import Inches
+import pandas as pd
+import plotly.express as px
 
 # ==============================================================================
 # SİSTEM AYARLARI VE GİZLİ KASA
@@ -41,12 +43,10 @@ def init_db():
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS Veliler (kullanici_adi TEXT PRIMARY KEY, sifre TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS Cocuklar (id INTEGER PRIMARY KEY AUTOINCREMENT, isim TEXT, mevcut_adim INTEGER, veli_kadi TEXT)''')
-    
     try:
         c.execute("ALTER TABLE Cocuklar ADD COLUMN veli_kadi TEXT DEFAULT 'Kurucu'")
     except:
         pass
-        
     c.execute('''CREATE TABLE IF NOT EXISTS Gorevler (id INTEGER PRIMARY KEY AUTOINCREMENT, cocuk_id INTEGER, gorev_adi TEXT, tefekkur TEXT, durum TEXT, puan INTEGER, veli_notu TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS ozel_beratlar (id INTEGER PRIMARY KEY AUTOINCREMENT, cocuk_id INTEGER, berat_adi TEXT, berat_aciklama TEXT)''')
     conn.commit()
@@ -54,6 +54,7 @@ def init_db():
 
 init_db()
 
+# ... (Veritabanı fonksiyonları daha öncekiyle tamamen aynı, hiçbir veri kaybı yok) ...
 def veli_kaydol(kadi, sifre):
     conn = sqlite3.connect(DB_YOLU)
     c = conn.cursor()
@@ -221,42 +222,150 @@ def ai_cevap_uret(soru, mevcut_adim, rol="veli", cocuk_isim=""):
         return f"[ SİSTEM HATASI ]: Bağlantı kurulamadı. Detay: {str(e)}"
 
 # ==============================================================================
-# ARAYÜZ TASARIMI (CSS)
+# ARAYÜZ TASARIMI (WEB SİTESİ ESTETİĞİ CSS)
 # ==============================================================================
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap');
-    html, body, [class*="css"] { font-family: 'Nunito', sans-serif; background-color: #f0f4f8 !important; color: #334155 !important; }
-    h1, h2, h3, h4, h5 { font-family: 'Baloo 2', sans-serif; font-weight: 700; color: #4f46e5 !important; }
-    .glass-box { background: #ffffff; border: 2px solid #e0e7ff; border-radius: 16px; padding: 25px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.05); }
-    .glass-task { background: #fdf2f8; border-left: 5px solid #f472b6; border-radius: 12px; padding: 20px; margin-bottom: 15px; }
-    .top-bar { background: #ffffff; border-bottom: 3px solid #e0e7ff; padding: 15px; margin-top: -50px; margin-bottom: 30px; border-radius: 0 0 20px 20px; }
-    .qyman-hud { background: #eff6ff; border-left: 5px solid #3b82f6; border-radius: 12px; padding: 20px; font-family: 'Nunito', sans-serif; color: #1e3a8a; line-height: 1.6; margin-bottom: 20px; }
-    .neon-text { color: #4f46e5 !important; text-shadow: none; font-weight: 700; }
-    .radar-baslik { color: #ec4899; font-weight: 700; margin-top: 15px; font-family: 'Baloo 2', sans-serif; font-size: 1.2rem; }
-    .radar-adim { color: #64748b; font-size: 0.95rem; margin-left: 15px; padding-top: 5px; border-left: 3px solid #e2e8f0; padding-left: 12px; font-weight: 600; }
-    .stButton>button { border-radius: 12px; font-family: 'Baloo 2', sans-serif; font-size: 1.1rem !important; font-weight: 700; border: none; background-color: #6366f1; color: white !important; transition: all 0.3s ease; width: 100%; box-shadow: 0 4px 6px rgba(99, 102, 241, 0.25); }
-    .stButton>button:hover { background-color: #4f46e5; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(99, 102, 241, 0.35); }
-    .hero-title { text-align: center; font-size: 4.5rem; color: #4f46e5; margin-bottom: 0; font-family: 'Baloo 2', sans-serif; font-weight: 800; }
-    .hero-subtitle { text-align: center; color: #64748b; font-size: 1.2rem; font-weight: 600; margin-bottom: 25px; }
-    .login-console { background: #ffffff; border: 2px solid #e0e7ff; border-radius: 20px; padding: 35px; margin-top: 15px; }
-    .login-header { text-align:center; color:#4f46e5; margin-bottom:20px; font-family: 'Baloo 2', sans-serif; font-weight: 700; }
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+    
+    html, body, [class*="css"] { 
+        font-family: 'Plus Jakarta Sans', sans-serif; 
+        background-color: #f8fafc !important; 
+        color: #1e293b !important; 
+    }
+    
+    h1, h2, h3, h4, h5 { 
+        font-family: 'Outfit', sans-serif; 
+        font-weight: 700; 
+        color: #0f172a !important; 
+        letter-spacing: -0.5px;
+    }
+    
+    .glass-box { 
+        background: #ffffff; 
+        border: 1px solid #e2e8f0; 
+        border-radius: 20px; 
+        padding: 30px; 
+        margin-bottom: 25px; 
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01); 
+        transition: transform 0.2s ease-in-out;
+    }
+    .glass-box:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+    }
+    
+    .glass-task { 
+        background: linear-gradient(145deg, #ffffff, #fdf4ff); 
+        border-left: 6px solid #d946ef; 
+        border-radius: 16px; 
+        padding: 25px; 
+        margin-bottom: 20px; 
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    
+    .top-bar { 
+        background: rgba(255, 255, 255, 0.8); 
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid #e2e8f0; 
+        padding: 15px; 
+        margin-top: -60px; 
+        margin-bottom: 40px; 
+        border-radius: 0 0 24px 24px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+    }
+    
+    .qyman-hud { 
+        background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%); 
+        border: 1px solid #bfdbfe;
+        border-radius: 16px; 
+        padding: 25px; 
+        color: #1e3a8a; 
+        line-height: 1.7; 
+        margin-bottom: 25px;
+        box-shadow: inset 0 2px 4px 0 rgba(255, 255, 255, 0.5);
+    }
+    
+    .neon-text { 
+        background: linear-gradient(to right, #4f46e5, #9333ea);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800; 
+    }
+    
+    .stButton>button { 
+        border-radius: 14px; 
+        font-family: 'Plus Jakarta Sans', sans-serif; 
+        font-size: 1rem !important; 
+        font-weight: 600; 
+        border: none; 
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); 
+        color: white !important; 
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+        width: 100%; 
+        padding: 12px 24px;
+        box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4); 
+    }
+    .stButton>button:hover { 
+        background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+        transform: translateY(-2px) scale(1.01); 
+        box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.5); 
+    }
+    
+    .hero-title { 
+        text-align: center; 
+        font-size: 5rem; 
+        background: linear-gradient(to right, #3b82f6, #8b5cf6, #ec4899);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 5px; 
+        font-family: 'Outfit', sans-serif; 
+        font-weight: 900; 
+        letter-spacing: -2px;
+    }
+    
+    .hero-subtitle { 
+        text-align: center; 
+        color: #64748b; 
+        font-size: 1.3rem; 
+        font-weight: 500; 
+        margin-bottom: 40px; 
+    }
+    
+    /* Sekme (Tabs) Estetiği */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background-color: #f1f5f9;
+        border-radius: 12px;
+        padding: 6px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 8px;
+        padding: 10px 20px;
+        color: #64748b;
+        font-weight: 600;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: #ffffff !important;
+        color: #4f46e5 !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
     </style>
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# ÜST DURUM ÇUBUĞU
+# ÜST DURUM ÇUBUĞU (NAVBAR)
 # ==============================================================================
 def ust_komuta_merkezi():
     st.markdown('<div class="top-bar"></div>', unsafe_allow_html=True)
     col_sol, col_orta, col_sag = st.columns([3, 1, 4])
     
     with col_sol:
-        if st.session_state.aktif_sayfa == "Ana Sayfa": durum_metni = "ANA SAYFA"
-        elif st.session_state.aktif_sayfa == "Veli_Panel": durum_metni = "REHBERLİK KÖŞESİ"
-        elif st.session_state.aktif_sayfa == "Veli_Giris": durum_metni = "REHBER GİRİŞİ"
-        else: durum_metni = "GELİŞİM YOLCULUĞU"
-        st.markdown(f'<div style="color: #64748b; font-weight: 600;">Qyvam Eğitim Sistemi > <b style="color: #4f46e5;">{durum_metni}</b></div>', unsafe_allow_html=True)
+        if st.session_state.aktif_sayfa == "Ana Sayfa": durum_metni = "Ana Sayfa"
+        elif st.session_state.aktif_sayfa == "Veli_Panel": durum_metni = "Rehberlik Köşesi"
+        elif st.session_state.aktif_sayfa == "Veli_Giris": durum_metni = "Rehber Girişi"
+        else: durum_metni = "Gelişim Yolculuğu"
+        st.markdown(f'<div style="color: #64748b; font-weight: 500; font-size:1.1rem;">Qyvam Eğitim Ekosistemi <span style="margin: 0 10px;">/</span> <b style="color: #4f46e5;">{durum_metni}</b></div>', unsafe_allow_html=True)
         
     with col_orta:
         if st.session_state.aktif_sayfa == "Ana Sayfa" or st.session_state.aktif_sayfa == "Cocuk_Panel":
@@ -273,15 +382,14 @@ def ust_komuta_merkezi():
     with col_sag:
         tz = pytz.timezone('Europe/Istanbul')
         simdi = datetime.now(tz)
-        st.markdown(f'<div style="text-align: right; color: #0284c7; font-weight: 700;">{simdi.strftime("%d.%m.%Y | %H:%M")}</div>', unsafe_allow_html=True)
-        st.markdown('<hr style="border-color: rgba(99, 102, 241, 0.2); margin-top: 15px;">', unsafe_allow_html=True)
+        st.markdown(f'<div style="text-align: right; color: #0f172a; font-weight: 600; font-size:1.1rem;">{simdi.strftime("%d.%m.%Y | %H:%M")}</div>', unsafe_allow_html=True)
 
 # ==============================================================================
 # GELİŞİM RADARI (SOL MENÜ)
 # ==============================================================================
 def sol_radar_olustur():
-    st.sidebar.markdown('<h2 class="neon-text" style="text-align:center;">GELİŞİM RADARI</h2>', unsafe_allow_html=True)
-    st.sidebar.markdown('<div style="text-align:center; margin-bottom: 20px; color:#8b5cf6; font-weight:700;">[ MÜFREDAT AKTİF ]</div>', unsafe_allow_html=True)
+    st.sidebar.markdown('<h2 class="neon-text" style="text-align:center; margin-bottom:0;">GELİŞİM RADARI</h2>', unsafe_allow_html=True)
+    st.sidebar.markdown('<div style="text-align:center; margin-bottom: 30px; color:#64748b; font-size:0.9rem; font-weight:600;">Canlı Müfredat Takibi</div>', unsafe_allow_html=True)
     if not MUFREDAT: return
 
     faz_gruplari = {}
@@ -295,14 +403,14 @@ def sol_radar_olustur():
         faz_gruplari[faz_adi][ust_seviye].append((adim_no, alt_seviye))
 
     for faz_adi, ust_seviyeler in faz_gruplari.items():
-        with st.sidebar.expander(f"[{faz_adi.upper()}]"):
+        with st.sidebar.expander(f"📚 {faz_adi.upper()}"):
             for ust_adi, alt_liste in ust_seviyeler.items():
-                st.markdown(f"<div class='radar-baslik'>{ust_adi}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='color: #4f46e5; font-weight: 700; margin-top: 15px;'>{ust_adi}</div>", unsafe_allow_html=True)
                 for adim_no, alt_adi in alt_liste:
-                    st.markdown(f"<div class='radar-adim'>Adım {adim_no}: {alt_adi}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='color: #64748b; font-size: 0.9rem; padding-left: 10px; border-left: 2px solid #e2e8f0; margin-top: 5px;'>Adım {adim_no}: {alt_adi}</div>", unsafe_allow_html=True)
 
 # ==============================================================================
-# SAYFA 1: ANA KARŞILAMA EKRANI (RASTGELE ANİMASYONLU)
+# SAYFA 1: ANA KARŞILAMA EKRANI 
 # ==============================================================================
 def ana_karsilama_ekrani():
     st.markdown('<div class="hero-title">Q Y V A M</div>', unsafe_allow_html=True)
@@ -320,8 +428,8 @@ def ana_karsilama_ekrani():
             st.image("qyman.png", use_container_width=True)
             
         st.markdown("""
-            <div class="qyman-hud" style="text-align: center; margin-top: -15px; position: relative; z-index: 10;">
-                <span style="font-size:1.2rem; font-weight:700; color:#8b5cf6;">✨ Sisteme Hoş Geldin! ✨</span><br><br>
+            <div class="qyman-hud" style="text-align: center; margin-top: -20px; position: relative; z-index: 10;">
+                <span style="font-size:1.3rem; font-weight:800; color:#4f46e5;">✨ Sisteme Hoş Geldin! ✨</span><br><br>
                 <b>Ben Qyman, senin dijital rehberinim.</b><br>
                 Maceraya başlamak için aşağıdan profilini seç ve bağlantıyı kur.
             </div>
@@ -331,8 +439,8 @@ def ana_karsilama_ekrani():
         if not cocuklar:
             st.warning("⚠️ Sistemde henüz kayıtlı bir profil yok. Lütfen sağ üstten 'Rehber Girişi' yaparak yeni bir hesap açın ve çocuğunuzu ekleyin.")
         else:
-            st.markdown('<div class="login-console">', unsafe_allow_html=True)
-            st.markdown('<div class="login-header">[ BAĞLANTI MODÜLÜ ]</div>', unsafe_allow_html=True)
+            st.markdown('<div class="glass-box">', unsafe_allow_html=True)
+            st.markdown('<h3 style="text-align:center; color:#0f172a; margin-bottom:20px;">[ BAĞLANTI MODÜLÜ ]</h3>', unsafe_allow_html=True)
             
             secenekler = [f"{c[1]} (Rehber: {c[2]})" for c in cocuklar]
             secilen_metin = st.selectbox("Kayıtlı Profiliniz:", secenekler, label_visibility="collapsed")
@@ -347,20 +455,21 @@ def ana_karsilama_ekrani():
             st.markdown('</div>', unsafe_allow_html=True)
 
 # ==============================================================================
-# SAYFA 2: VELİ GÜVENLİK PROTOKOLÜ (KAYIT & GİRİŞ)
+# SAYFA 2: VELİ GÜVENLİK PROTOKOLÜ
 # ==============================================================================
 def veli_giris_ekrani():
     col1, col2, col3 = st.columns([1, 1.5, 1])
     with col2:
         st.markdown('<div class="glass-box" style="text-align:center;">', unsafe_allow_html=True)
-        st.markdown('<h2 class="neon-text">[ REHBER PORTALI ]</h2>', unsafe_allow_html=True)
-        st.markdown('<p style="color:#94a3b8;">Sisteme giriş yapın veya yeni bir rehber hesabı oluşturun.</p></div>', unsafe_allow_html=True)
+        st.markdown('<h2 class="neon-text">REHBER PORTALI</h2>', unsafe_allow_html=True)
+        st.markdown('<p style="color:#64748b;">Sisteme giriş yapın veya yeni bir rehber hesabı oluşturun.</p></div>', unsafe_allow_html=True)
         
         tab1, tab2 = st.tabs(["🔑 Giriş Yap", "📝 Yeni Kayıt Ol"])
         
         with tab1:
             g_kadi = st.text_input("Kullanıcı Adı (Giriş):", key="g_kadi")
             g_sifre = st.text_input("Şifre (Giriş):", type="password", key="g_sifre")
+            st.markdown('<br>', unsafe_allow_html=True)
             if st.button("🚀 Giriş Yap", key="btn_giris"):
                 if veli_giris_yap(g_kadi, g_sifre):
                     st.session_state.veli_kadi = g_kadi
@@ -372,6 +481,7 @@ def veli_giris_ekrani():
         with tab2:
             k_kadi = st.text_input("Yeni Kullanıcı Adı:", key="k_kadi")
             k_sifre = st.text_input("Yeni Şifre:", type="password", key="k_sifre")
+            st.markdown('<br>', unsafe_allow_html=True)
             if st.button("💾 Hesabı Oluştur", key="btn_kayit"):
                 if k_kadi and k_sifre:
                     if veli_kaydol(k_kadi, k_sifre):
@@ -382,7 +492,7 @@ def veli_giris_ekrani():
                     st.warning("Kullanıcı adı ve şifre boş bırakılamaz.")
 
 # ==============================================================================
-# SAYFA 3: VELİ / REHBER YÖNETİM PANELİ (EKSİKSİZ 6 SEKME)
+# SAYFA 3: VELİ / REHBER YÖNETİM PANELİ (ESTETİK GRAFİK EKLENDİ)
 # ==============================================================================
 def veli_panel_ekrani():
     if not st.session_state.get("veli_kadi"):
@@ -390,7 +500,7 @@ def veli_panel_ekrani():
         if st.button("Geri Dön"): st.session_state.aktif_sayfa = "Ana Sayfa"; st.rerun()
         return
 
-    st.markdown(f'<h1 class="neon-text">REHBERLİK KÖŞESİ (Hoş Geldiniz, {st.session_state.veli_kadi})</h1><hr>', unsafe_allow_html=True)
+    st.markdown(f'<h1 class="neon-text">Rehberlik Köşesi</h1><p style="color:#64748b; font-size:1.1rem; margin-top:-15px; margin-bottom:30px;">Hoş Geldiniz, {st.session_state.veli_kadi}</p>', unsafe_allow_html=True)
     t1, t2, t3, t4, t5, t6 = st.tabs(["Gözlem ve Onay", "Serbest Rapor", "Gelişim Matrisi", "Özel Berat Tasarla", "Sisteme Kayıt", "AI Pedagog"])
 
     with t1:
@@ -401,14 +511,9 @@ def veli_panel_ekrani():
             st.info("Şu an onay bekleyen bir görev bulunmamaktadır.")
         else:
             for kayit in bekleyenler:
-                islem_id = kayit[0]
-                c_id = kayit[4]
-                gorev_adi = kayit[2]
-                cevap = kayit[3]
-                cocuk_isim = kayit[1]
-                
+                islem_id, cocuk_isim, gorev_adi, cevap, c_id, _ = kayit
                 with st.expander(f"📌 {cocuk_isim} - {gorev_adi}", expanded=True):
-                    st.write(f"**Çocuğun İfadesi:** {cevap}")
+                    st.markdown(f"<div style='background:#f1f5f9; padding:15px; border-radius:10px;'><b>Çocuğun İfadesi:</b><br>{cevap}</div><br>", unsafe_allow_html=True)
                     yuklenen_foto = st.file_uploader(f"Kanıt Fotoğrafı Yükle ({cocuk_isim})", type=['png', 'jpg', 'jpeg'], key=f"foto_{islem_id}")
                     veli_degerlendirmesi = st.text_area("Rehber Notunuzu Ekleyin:", key=f"not_{islem_id}")
                     
@@ -422,13 +527,7 @@ def veli_panel_ekrani():
                         if yuklenen_foto and veli_degerlendirmesi:
                             foto_bytes = yuklenen_foto.getvalue()
                             word_dosyasi = word_raporu_olustur(cocuk_isim, gorev_adi, veli_degerlendirmesi, foto_bytes)
-                            st.download_button(
-                                label="📄 Fotoğraflı Word Raporunu İndir",
-                                data=word_dosyasi,
-                                file_name=f"{cocuk_isim}_Gorev_Raporu.docx",
-                                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                                key=f"dl_{islem_id}"
-                            )
+                            st.download_button("📄 Fotoğraflı Word Raporunu İndir", data=word_dosyasi, file_name=f"{cocuk_isim}_Gorev_Raporu.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", key=f"dl_{islem_id}")
 
     with t2:
         st.markdown('<div class="glass-box"><h3>Serbest Fotoğraflı Rapor Al</h3></div>', unsafe_allow_html=True)
@@ -444,33 +543,45 @@ def veli_panel_ekrani():
             if serbest_foto and serbest_veli_notu and serbest_gorev_adi:
                 foto_b = serbest_foto.getvalue()
                 s_word_dosyasi = word_raporu_olustur(secilen_cocuk, serbest_gorev_adi, serbest_veli_notu, foto_b)
-                st.download_button(
-                    label="📄 Serbest Raporu Word Olarak İndir",
-                    data=s_word_dosyasi,
-                    file_name=f"{secilen_cocuk}_Serbest_Rapor.docx",
-                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                    key="dl_serbest"
-                )
+                st.download_button("📄 Serbest Raporu Word Olarak İndir", data=s_word_dosyasi, file_name=f"{secilen_cocuk}_Serbest_Rapor.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", key="dl_serbest")
 
     with t3:
-        st.markdown('<div class="glass-box"><h3>Gelişim Matrisi ve Görev Atama</h3><p style="color:#64748b;">Çocukların ilerleyişini takip edebilir ve müfredattaki seviyeleri manuel olarak atayabilirsiniz.</p></div>', unsafe_allow_html=True)
+        st.markdown('<div class="glass-box"><h3>Gelişim Matrisi ve Analiz Grafiği</h3><p style="color:#64748b;">Çocuklarınızın müfredattaki ilerleyişini interaktif grafik üzerinde takip edebilir ve yeni görevler atayabilirsiniz.</p></div>', unsafe_allow_html=True)
         cocuklar = cocuklari_getir(st.session_state.veli_kadi)
         
-        st.markdown("#### 📊 Mevcut İlerleme Durumları")
-        if not cocuklar:
-            st.info("Kayıtlı çocuğunuz bulunmuyor.")
-        else:
+        # --- ŞIK PLOTLY GRAFİĞİ ---
+        if cocuklar:
+            st.markdown("#### 📈 İlerleme Grafiği")
+            df = pd.DataFrame(cocuklar, columns=["ID", "İsim", "Mevcut Adım"])
+            
+            fig = px.bar(
+                df, x="İsim", y="Mevcut Adım", text="Mevcut Adım", color="Mevcut Adım",
+                color_continuous_scale=["#c7d2fe", "#6366f1", "#312e81"],
+            )
+            
+            fig.update_layout(
+                plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
+                font=dict(family="Plus Jakarta Sans, sans-serif", color="#334155", size=14),
+                xaxis=dict(showgrid=False, linecolor="#cbd5e1", title=""),
+                yaxis=dict(showgrid=True, gridcolor="#f1f5f9", linecolor="#cbd5e1", title="Müfredat Adımı"),
+                margin=dict(t=20, b=20, l=20, r=20)
+            )
+            fig.update_traces(textfont_size=14, textangle=0, textposition="outside", cliponaxis=False, marker_line_color="#4f46e5", marker_line_width=1, opacity=0.9)
+            
+            st.plotly_chart(fig, use_container_width=True)
+            
+            st.markdown("<br>#### 📊 Detaylı İlerleme Çubukları", unsafe_allow_html=True)
             for cid, isim, adim in cocuklar:
                 ilerleme = int((adim / max(MUFREDAT.keys())) * 100) if MUFREDAT else 0
-                st.markdown(f"**{isim}** - Aşama {adim} ({ilerleme}%)")
+                st.markdown(f"<div style='font-weight:600; color:#0f172a;'>{isim} <span style='color:#64748b; font-weight:400;'>- Aşama {adim} ({ilerleme}%)</span></div>", unsafe_allow_html=True)
                 st.progress(min(ilerleme, 100))
+        else:
+            st.info("Kayıtlı çocuğunuz bulunmuyor.")
                 
-        st.markdown("<hr style='border-color: #e2e8f0;'>", unsafe_allow_html=True)
+        st.markdown("<hr style='border-color: #e2e8f0; margin:30px 0;'>", unsafe_allow_html=True)
         
         st.markdown("#### 🎯 Yeni Görev / Aşama Ata")
-        if not cocuklar:
-            st.warning("Önce sisteme bir çocuk eklemelisiniz.")
-        else:
+        if cocuklar:
             col_cocuk, col_gorev = st.columns(2)
             with col_cocuk:
                 secilen_cocuk_isim_g = st.selectbox("Görev Atanacak Çocuk:", [c[1] for c in cocuklar], key="g_ata_isim")
@@ -504,16 +615,12 @@ def veli_panel_ekrani():
                 "6. Neon Işıklar (Canlı/Pembe)": {"bg": "#fdf2f8", "border": "#be185d", "text": "#831843"},
                 "7. Zarif Minimal (Sade/Siyah-Beyaz)": {"bg": "#ffffff", "border": "#475569", "text": "#1e293b"}
             }
-
             col_sol, col_sag = st.columns([1, 1])
             with col_sol:
                 secilen_isim = st.selectbox("Beratı Kazanacak Çocuğu Seçin:", [c[1] for c in cocuklar], key="berat_cocuk")
                 secilen_id = next(c[0] for c in cocuklar if c[1] == secilen_isim)
                 veli_isim = st.text_input("Anne/Baba Adı Soyadı:", placeholder="Örn: Ahmet Yılmaz")
-                faz_adi = st.selectbox("Hangi Faz İçin Veriliyor?", [
-                    "KÖKLER FAZI", "BAĞLAR FAZI", "PUSULA FAZI", 
-                    "AYNALAR FAZI", "ÇARKLAR FAZI", "KÖPRÜLER FAZI", "KANATLAR FAZI", "ÖZEL BAŞARI BERATI"
-                ])
+                faz_adi = st.selectbox("Hangi Faz İçin Veriliyor?", ["KÖKLER FAZI", "BAĞLAR FAZI", "PUSULA FAZI", "AYNALAR FAZI", "ÇARKLAR FAZI", "KÖPRÜLER FAZI", "KANATLAR FAZI", "ÖZEL BAŞARI BERATI"])
                 secilen_tema = st.selectbox("Sertifika Tasarımı (7 Farklı Tema):", list(BERAT_TEMALARI.keys()))
             with col_sag:
                 st.info("💡 **Nasıl Çıktı Alınır?**\nBeratınızı oluşturduktan sonra 'İndir' butonuna basarak bilgisayarınıza kaydedin. Tarayıcıda açtıktan sonra klavyeden **Ctrl+P** tuşlarına basarak A4 yatay olarak yazdırabilirsiniz.")
@@ -567,10 +674,7 @@ def veli_panel_ekrani():
                                     <div class="title">{faz_adi}</div>
                                     <div class="salutation">Sevgili oğlum/kızım ;</div>
                                     <div class="name">{secilen_isim}</div>
-                                    <div class="description">
-                                        Bu bir sertifikadan daha fazlası; birlikte geçirdiğimiz harika anların bir hatırası!<br>
-                                        <strong>{faz_adi}</strong> yolculuğumuza ortak olduğun ve bu güzel deneyimi beraber paylaştığımız için kalpten teşekkür ederim. Başarılarının devamını dilerim.
-                                    </div>
+                                    <div class="description">Bu bir sertifikadan daha fazlası; birlikte geçirdiğimiz harika anların bir hatırası!<br><strong>{faz_adi}</strong> yolculuğumuza ortak olduğun ve bu güzel deneyimi beraber paylaştığımız için kalpten teşekkür ederim. Başarılarının devamını dilerim.</div>
                                     <div class="footer">
                                         <div class="signature-block">
                                             <div class="sign-name">{veli_isim}</div>
@@ -602,17 +706,12 @@ def veli_panel_ekrani():
                     st.markdown("### 📜 Tasarım Önizlemesi")
                     import streamlit.components.v1 as components
                     components.html(html_icerik, height=750)
-                    st.download_button(
-                        label="📥 Bu Beratı İndir (PDF / Çıktı İçin)",
-                        data=html_icerik,
-                        file_name=f"Qyvam_Berat_{secilen_isim}.html",
-                        mime="text/html"
-                    )
+                    st.download_button("📥 Bu Beratı İndir (PDF / Çıktı İçin)", data=html_icerik, file_name=f"Qyvam_Berat_{secilen_isim}.html", mime="text/html")
                     ozel_berat_ekle(secilen_id, faz_adi, "Veli tarafından özel tasarım berat takdim edildi.")
                     st.success(f"Berat tasarımı hazırlandı ve {secilen_isim} isimli çocuğun profiline işlendi!")
 
     with t5:
-        st.markdown('<div class="glass-box"><h3>Sistem Kayıt Yönetimi</h3><p style="color:#64748b;">Hesabınıza bağlı yeni çocuklar ekleyebilir veya silebilirsiniz.</p></div>', unsafe_allow_html=True)
+        st.markdown('<div class="glass-box"><h3>Sistem Kayıt Yönetimi</h3></div>', unsafe_allow_html=True)
         col_ekle, col_cikar = st.columns(2)
         with col_ekle:
             st.markdown("#### ➕ Yeni Profil Ekle")
@@ -659,7 +758,7 @@ def cocuk_panel_ekrani():
     isim, mevcut_adim = bilgi
     adim_bilgisi = MUFREDAT.get(mevcut_adim, {"faz": "Zirve", "ust_seviye": "Tamamlandı", "alt_seviye": "Tebrikler", "varsayilan_gorev": "Tüm adımları başarıyla tamamladın.", "varsayilan_tefekkur": "Bu yolculuk sana ne kattı?"})
     
-    st.markdown(f'<h1 class="neon-text" style="font-size: 2.5rem;">Hoş Geldin, {isim.title()}!</h1><hr>', unsafe_allow_html=True)
+    st.markdown(f'<h1 class="neon-text" style="font-size: 2.5rem; text-align:left;">Hoş Geldin, {isim.title()}!</h1><hr>', unsafe_allow_html=True)
     
     col_img, col_hud = st.columns([1, 4])
     with col_img:
@@ -679,9 +778,9 @@ def cocuk_panel_ekrani():
         else:
             st.markdown(f'''
             <div class="glass-box">
-                <p style="color:#94a3b8; font-size:1.1rem; margin-bottom:5px;">Aşama {mevcut_adim} : {adim_bilgisi["alt_seviye"]}</p>
+                <p style="color:#64748b; font-size:1.1rem; font-weight:600; margin-bottom:5px;">Aşama {mevcut_adim} : {adim_bilgisi["alt_seviye"]}</p>
                 <h2 class="neon-text" style="margin-top:0;">{adim_bilgisi["varsayilan_gorev"]}</h2>
-                <hr style="border-color: rgba(56, 189, 248, 0.2);">
+                <hr style="border-color: rgba(99, 102, 241, 0.2);">
                 <h4 style="color:#10b981;">Düşünme Vakti: {adim_bilgisi["varsayilan_tefekkur"]}</h4>
             </div>
             ''', unsafe_allow_html=True)
@@ -705,7 +804,7 @@ def cocuk_panel_ekrani():
             st.info("Henüz bir berat kazanmadın.")
         else:
             for s_adi, s_aciklama in tum_sertifikalar:
-                st.markdown(f'<div class="glass-task"><h3 style="color:#db2777;">🏆 {s_adi}</h3><p>{s_aciklama}</p></div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="glass-task"><h3 style="color:#db2777; margin-top:0;">🏆 {s_adi}</h3><p style="margin-bottom:0;">{s_aciklama}</p></div>', unsafe_allow_html=True)
 
     with t3:
         st.markdown('<div class="glass-box"><h3>Qyman ile Konuş</h3></div>', unsafe_allow_html=True)
