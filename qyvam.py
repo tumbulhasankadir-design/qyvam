@@ -80,15 +80,7 @@ def cocuk_ekle(isim, veli_kadi):
     c.execute("INSERT INTO Cocuklar (isim, mevcut_adim, veli_kadi) VALUES (?, ?, ?)", (isim, 1, veli_kadi))
     conn.commit()
     conn.close()
-    
-def grafik_verisi_getir(veli_kadi):
-    conn = sqlite3.connect(DB_YOLU)
-    c = conn.cursor()
-    c.execute("SELECT isim, mevcut_adim FROM Cocuklar WHERE veli_kadi=?", (veli_kadi,))
-    data = c.fetchall()
-    conn.close()
-    return data
-    
+
 def cocuk_sil(cocuk_id):
     conn = sqlite3.connect(DB_YOLU)
     c = conn.cursor()
@@ -461,57 +453,20 @@ def veli_panel_ekrani():
                 )
 
     with t3:
-        st.markdown('<div class="glass-box"><h3>Gelişim Matrisi ve Analiz Grafiği</h3><p style="color:#64748b;">Çocuklarınızın müfredattaki ilerleyişini özel tasarımlı interaktif grafik üzerinde takip edebilir ve yeni görevler atayabilirsiniz.</p></div>', unsafe_allow_html=True)
-        
+        st.markdown('<div class="glass-box"><h3>Gelişim Matrisi ve Görev Atama</h3><p style="color:#64748b;">Çocukların ilerleyişini takip edebilir ve müfredattaki seviyeleri manuel olarak atayabilirsiniz.</p></div>', unsafe_allow_html=True)
         cocuklar = cocuklari_getir(st.session_state.veli_kadi)
         
-        # --- 1. KISIM: ŞIK PLOTLY GRAFİĞİ ---
-        if cocuklar:
-            st.markdown("#### 📈 Çocukların İlerleme Grafiği")
-            import pandas as pd
-            import plotly.express as px
-            
-            # Veri çerçevesi oluşturuyoruz
-            df = pd.DataFrame(cocuklar, columns=["ID", "İsim", "Mevcut Adım"])
-            
-            # Qyvam'ın mor/mavi ve pastel renk konseptine uygun özel renk paleti
-            fig = px.bar(
-                df, 
-                x="İsim", 
-                y="Mevcut Adım", 
-                text="Mevcut Adım",
-                color="Mevcut Adım",
-                color_continuous_scale=["#a5b4fc", "#6366f1", "#4f46e5"], # Açık mordan koyu mora şık geçiş
-                title="<b>Müfredat İlerleme Durumu</b>"
-            )
-            
-            # Grafik arayüzünü projenizin tasarımına (Glassmorphism) uyarlıyoruz
-            fig.update_layout(
-                plot_bgcolor="rgba(0,0,0,0)",
-                paper_bgcolor="rgba(0,0,0,0)",
-                font=dict(family="Nunito, sans-serif", color="#334155", size=14),
-                title_font=dict(size=18, color="#4f46e5"),
-                xaxis=dict(showgrid=False, linecolor="#cbd5e1"),
-                yaxis=dict(showgrid=True, gridcolor="#e2e8f0", linecolor="#cbd5e1"),
-                margin=dict(t=40, b=20, l=20, r=20)
-            )
-            
-            fig.update_traces(textfont_size=12, textangle=0, textposition="outside", cliponaxis=False)
-            
-            # Grafiği ekrana basıyoruz
-            st.plotly_chart(fig, use_container_width=True)
-            
-            st.markdown("<br>#### 📊 Detaylı İlerleme Çubukları", unsafe_allow_html=True)
+        st.markdown("#### 📊 Mevcut İlerleme Durumları")
+        if not cocuklar:
+            st.info("Kayıtlı çocuğunuz bulunmuyor.")
+        else:
             for cid, isim, adim in cocuklar:
                 ilerleme = int((adim / max(MUFREDAT.keys())) * 100) if MUFREDAT else 0
                 st.markdown(f"**{isim}** - Aşama {adim} ({ilerleme}%)")
                 st.progress(min(ilerleme, 100))
-        else:
-            st.info("Kayıtlı çocuğunuz bulunmuyor. Grafik görüntülemek için 'Sisteme Kayıt' sekmesinden çocuk ekleyin.")
                 
-        st.markdown("<hr style='border-color: #e2e8f0; margin: 30px 0;'>", unsafe_allow_html=True)
+        st.markdown("<hr style='border-color: #e2e8f0;'>", unsafe_allow_html=True)
         
-        # --- 2. KISIM: MANUEL GÖREV ATAMA ---
         st.markdown("#### 🎯 Yeni Görev / Aşama Ata")
         if not cocuklar:
             st.warning("Önce sisteme bir çocuk eklemelisiniz.")
@@ -522,14 +477,14 @@ def veli_panel_ekrani():
                 secilen_id_g = next(c[0] for c in cocuklar if c[1] == secilen_cocuk_isim_g)
             with col_gorev:
                 mufredat_secenekleri = [f"Adım {a}: {i['faz']} ➔ {i['alt_seviye']}" for a, i in MUFREDAT.items()]
-                secilen_mufredat_metin = st.selectbox("Atanacak Aşama:", mufredat_secenekleri, key="g_ata_asama")
+                secilen_mufredat_metin = st.selectbox("Atanacak Aşama:", mufredat_secenekleri)
                 yeni_adim_no = int(secilen_mufredat_metin.split(":")[0].replace("Adım ", ""))
                 
             if MUFREDAT and yeni_adim_no in MUFREDAT:
                 secilen_icerik = MUFREDAT[yeni_adim_no]
                 st.info(f"**📌 Çocuğa Gidecek Görev:** {secilen_icerik['varsayilan_gorev']}\n\n**🤔 Tefekkür Sorusu:** {secilen_icerik['varsayilan_tefekkur']}")
             
-            if st.button("🚀 Bu Görevi Çocuğa Ata", key="btn_gorev_ata"):
+            if st.button("🚀 Bu Görevi Çocuğa Ata"):
                 cocuk_adim_guncelle(secilen_id_g, yeni_adim_no)
                 st.success(f"Harika! '{secilen_cocuk_isim_g}' artık Adım {yeni_adim_no} seviyesinde.")
                 st.rerun()
