@@ -751,7 +751,7 @@ elif st.session_state.aktif_sayfa == "Veli_Panel": veli_panel_ekrani()
 elif st.session_state.aktif_sayfa == "Cocuk_Panel": cocuk_panel_ekrani()
 
 # ==============================================================================
-# ALT BİLGİ (FOOTER) MODÜLÜ (TAM EKRAN GENİŞLİĞİNDE)
+# ALT BİLGİ (FOOTER) MODÜLÜ (TAM EKRAN VE HATASIZ)
 # ==============================================================================
 import base64
 
@@ -771,7 +771,7 @@ def sayfa_altbilgisi_olustur():
 
     st.markdown(f"""
     <style>
-    /* FOOTER'I TAM EKRAN (FULL WIDTH) YAPAN SİHİRLİ KOD */
+    /* FOOTER TAM EKRAN AYARI */
     .qyvam-footer {{
         width: 100vw;
         position: relative;
@@ -781,17 +781,16 @@ def sayfa_altbilgisi_olustur():
         margin-right: -50vw;
         background-color: #f8fafc;
         border-top: 1px solid #e2e8f0;
-        padding: 60px 0 20px 0; /* Sağ ve soldaki paddingi sıfırladık, içerik container'ı hizalayacak */
+        padding: 60px 0 20px 0; 
         margin-top: 80px;
         font-family: 'Plus Jakarta Sans', sans-serif;
         color: #475569;
     }}
-    /* İçeriklerin ortada hizalı durmasını sağlayan alan */
     .footer-container {{
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
         gap: 50px;
-        max-width: 1200px; /* İçerik çok fazla açılmasın diye limitliyoruz */
+        max-width: 1200px; 
         margin: 0 auto;
         padding: 0 40px;
     }}
@@ -814,7 +813,21 @@ def sayfa_altbilgisi_olustur():
     details.legal-box summary:hover {{ background: #f1f5f9; color: #4f46e5; }}
     details.legal-box p {{ padding: 15px; font-size: 0.85rem; color: #64748b; margin: 0; border-top: 1px solid #e2e8f0; background: #f8fafc; line-height: 1.6; }}
     
-    .social-links a {{ display: inline-block; margin-right: 12px; font-size: 0.9rem; font-weight: 600; background: #e2e8f0; padding: 8px 15px; border-radius: 20px; color: #475569; }}
+    /* SOSYAL MEDYA KUTULARININ TAŞMASINI ENGELLEYEN YENİ KOD */
+    .social-links {{
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }}
+    .social-links a {{ 
+        font-size: 0.9rem; 
+        font-weight: 600; 
+        background: #e2e8f0; 
+        padding: 8px 15px; 
+        border-radius: 20px; 
+        color: #475569; 
+        text-decoration: none;
+    }}
     .social-links a:hover {{ background: #4f46e5; color: white; }}
     
     .footer-bottom {{ text-align: center; padding-top: 30px; margin-top: 60px; border-top: 1px solid #e2e8f0; font-size: 0.9rem; color: #94a3b8; font-weight: 500; width: 100%; }}
