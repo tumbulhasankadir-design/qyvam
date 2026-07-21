@@ -693,7 +693,18 @@ def cocuk_panel_ekrani():
         if st.button("🤖 Qyman'a Gönder") and cocuk_sorusu:
             with st.spinner("Qyman düşünüyor..."): st.success(ai_cevap_uret(cocuk_sorusu, mevcut_adim, rol="cocuk", cocuk_isim=isim))
 
-            # ==============================================================================
+# ==============================================================================
+# ROUTER & SOL RADAR
+# ==============================================================================
+ust_komuta_merkezi()
+sol_radar_olustur()
+
+if st.session_state.aktif_sayfa == "Ana Sayfa": ana_karsilama_ekrani()
+elif st.session_state.aktif_sayfa == "Veli_Giris": veli_giris_ekrani()
+elif st.session_state.aktif_sayfa == "Veli_Panel": veli_panel_ekrani()
+elif st.session_state.aktif_sayfa == "Cocuk_Panel": cocuk_panel_ekrani()
+
+# ==============================================================================
 # SİSTEM ALT BİLGİSİ (FOOTER)
 # ==============================================================================
 def sistem_alt_bilgi_olustur():
@@ -767,14 +778,3 @@ def sistem_alt_bilgi_olustur():
             st.success("Bülten altyapımız çok yakında aktif olacak!")
             
     st.markdown('<div class="copyright">© 2026 QYVAM. Tüm hakları saklıdır.</div>', unsafe_allow_html=True)
-
-# ==============================================================================
-# ROUTER & SOL RADAR
-# ==============================================================================
-ust_komuta_merkezi()
-sol_radar_olustur()
-
-if st.session_state.aktif_sayfa == "Ana Sayfa": ana_karsilama_ekrani()
-elif st.session_state.aktif_sayfa == "Veli_Giris": veli_giris_ekrani()
-elif st.session_state.aktif_sayfa == "Veli_Panel": veli_panel_ekrani()
-elif st.session_state.aktif_sayfa == "Cocuk_Panel": cocuk_panel_ekrani()
